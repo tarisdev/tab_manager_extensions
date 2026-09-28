@@ -233,11 +233,25 @@ dialog {
   max-width: 90vw;
 }
 dialog::backdrop { background: rgba(0, 0, 0, 0.45); }
+dialog[open] { display: flex; flex-direction: column; }
+/* In flow, not absolute: the X gets its own line so no content can run under it.
+   No button chrome - just the glyph, red on hover. */
+.dialog-close {
+  align-self: flex-end;
+  margin: -10px -10px 0 0;
+  padding: 5px;
+  background: none;
+  border: 0;
+  color: var(--muted);
+}
+.dialog-close:hover { color: var(--danger); border-color: transparent; }
 .settings-form { display: flex; flex-direction: column; gap: 12px; }
 .settings-form label { display: flex; flex-direction: column; gap: 4px; }
 .settings-form label.checkbox { flex-direction: row; align-items: center; gap: 8px; }
 .hint { color: var(--muted); font-size: 12px; margin: -6px 0 0; }
 .dialog-actions { display: flex; justify-content: flex-end; gap: 8px; margin: 6px 0 0; padding: 0; }
+/* The cleanup plan arrives as one newline-joined string, so keep the breaks. */
+.confirm-body { margin: 0; max-width: 460px; white-space: pre-wrap; }
 
 #help-dialog { min-width: 420px; }
 .help-body { max-width: 520px; }
@@ -245,8 +259,6 @@ dialog::backdrop { background: rgba(0, 0, 0, 0.45); }
 .help-body p { margin: 0 0 10px; color: var(--muted); }
 .help-body ul { margin: 0; padding-left: 18px; display: flex; flex-direction: column; gap: 6px; }
 .help-body li { color: var(--fg); }
-
-#open-settings { position: fixed; right: 16px; bottom: 16px; z-index: 8; }
 
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {

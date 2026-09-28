@@ -159,6 +159,29 @@ img.favicon { width: 16px; height: 16px; border-radius: 3px; flex: none; }
 .status { margin: 0; padding: 0 12px 10px; color: var(--ok); min-height: 18px; font-size: 12px; }
 .status.error { color: var(--danger); }
 
+/* Shared confirm dialog (utils/confirm.js) - same look as the dashboard one. */
+dialog {
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--bg);
+  color: var(--fg);
+  padding: 16px;
+  max-width: 90vw;
+}
+dialog::backdrop { background: rgba(0, 0, 0, 0.45); }
+dialog[open] { display: flex; flex-direction: column; }
+.dialog-close {
+  align-self: flex-end;
+  margin: -10px -10px 0 0;
+  padding: 5px;
+  background: none;
+  border: 0;
+  color: var(--muted);
+}
+.dialog-close:hover { color: var(--danger); border-color: transparent; }
+.dialog-actions { display: flex; justify-content: flex-end; gap: 8px; margin: 12px 0 0; padding: 0; }
+.confirm-body { margin: 0; max-width: 360px; white-space: pre-wrap; }
+
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
     --bg: #202124;

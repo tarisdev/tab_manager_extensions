@@ -1,5 +1,6 @@
 import { MSG, KEEP_RULES } from '../utils/constants.js';
 import { faviconUrl } from '../utils/favicon.js';
+import { askConfirm } from '../utils/confirm.js';
 import { applyTranslations, resolveLocale, t } from '../utils/i18n.js';
 import { hydrateIcons, withIcon } from '../utils/icons.js';
 
@@ -204,7 +205,7 @@ el('clean').addEventListener('click', async () => {
     setStatus(t('status.nothingToClean'));
     return;
   }
-  if (!window.confirm(t('confirm.clean', { count: preview.total }))) return;
+  if (!(await askConfirm(t('confirm.clean', { count: preview.total })))) return;
   const result = await send(MSG.CLEAN_DUPLICATES, { rule, dryRun: false });
   setStatus(result.ok && result.closed ? t('status.dupesClosed', { count: result.closed }) : t('status.nothingClosed'),
     !result.ok);
@@ -216,7 +217,7 @@ el('close-all-dupes').addEventListener('click', async () => {
     setStatus(t('status.noDupesToClose'));
     return;
   }
-  if (!window.confirm(t('confirm.closeAll', { count: total }))) return;
+  if (!(await askConfirm(t('confirm.closeAll', { count: total })))) return;
   const ids = ui.state.duplicateGroups.flatMap((group) => group.tabIds.slice(1));
   const result = await send(MSG.CLOSE_TABS, { tabIds: ids });
   setStatus(result.ok && result.closed ? t('status.tabsClosed', { count: result.closed }) : t('status.nothingClosed'), !result.ok);

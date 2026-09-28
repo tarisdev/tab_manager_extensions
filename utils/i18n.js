@@ -73,6 +73,8 @@ const en = {
   'action.jumpFirstCopy': 'Jump to the first copy',
   'action.closeCopies': 'Close the other copies',
   'action.closeN': 'Close {count}',
+  'action.confirm': 'Confirm',
+  'action.cancel': 'Cancel',
 
   'status.urlCopied': 'URL copied',
   'status.titleUrlCopied': 'Title and URL copied',
@@ -197,6 +199,8 @@ const vi = {
   'action.jumpFirstCopy': 'Nhảy tới bản đầu tiên',
   'action.closeCopies': 'Đóng các bản còn lại',
   'action.closeN': 'Đóng {count}',
+  'action.confirm': 'Xác nhận',
+  'action.cancel': 'Huỷ',
 
   'status.urlCopied': 'Đã sao chép URL',
   'status.titleUrlCopied': 'Đã sao chép tiêu đề và URL',

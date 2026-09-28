@@ -2,6 +2,7 @@ import { MSG, KEEP_RULES, GROUP_MODES, FILTER } from '../utils/constants.js';
 import { groupTabs } from '../utils/tab-grouper.js';
 import { categoryLabel, t, applyTranslations, resolveLocale } from '../utils/i18n.js';
 import { faviconUrl } from '../utils/favicon.js';
+import { askConfirm } from '../utils/confirm.js';
 import { hydrateIcons, icon, withIcon } from '../utils/icons.js';
 
 async function send(type, payload = {}) {
@@ -239,7 +240,7 @@ function buildGroup(group, duplicateIds) {
   title.textContent = group.label;
   const count = document.createElement('span');
   count.className = 'group-meta';
-  count.textContent = t('tabCount', { n: group.count });
+  count.textContent = t('tabCount', { count: group.count });
   header.append(caret, title, count);
 
   // Only duplicates are closable, so the badge appears only when there are some.
@@ -347,7 +348,7 @@ async function cleanDuplicates() {
 
   const lines = preview.plan.map((entry) =>
     t('confirm.planLine', { title: entry.title || entry.domain, count: entry.count }));
-  const confirmed = window.confirm(
+  const confirmed = await askConfirm(
     t('confirm.cleanPlan', { count: preview.total, plan: lines.join('\n'), total: preview.total })
   );
   if (!confirmed) return;
@@ -360,7 +361,7 @@ async function cleanDuplicates() {
 async function closeSelected() {
   const ids = [...ui.selected];
   if (ids.length === 0) return;
-  if (!window.confirm(t('confirm.closeSelected', { count: ids.length }))) return;
+  if (!(await askConfirm(t('confirm.closeSelected', { count: ids.length })))) return;
   const result = await send(MSG.CLOSE_TABS, { tabIds: ids });
   ui.selected.clear();
   setStatus(result.ok && result.closed ? t('status.tabsClosed', { count: result.closed }) : t('status.nothingClosed'), !result.ok);
@@ -424,7 +425,7 @@ el('close-all-dupes').addEventListener('click', async () => {
     setStatus(t('status.noDupesToClose'));
     return;
   }
-  if (!window.confirm(t('confirm.closeAll', { count: total }))) return;
+  if (!(await askConfirm(t('confirm.closeAll', { count: total })))) return;
   const ids = ui.state.duplicateGroups.flatMap((group) => group.tabIds.slice(1));
   const result = await send(MSG.CLOSE_TABS, { tabIds: ids });
   setStatus(result.ok && result.closed ? t('status.tabsClosed', { count: result.closed }) : t('status.nothingClosed'), !result.ok);
@@ -443,6 +444,10 @@ el('theme-toggle').addEventListener('click', async () => {
 el('open-settings').addEventListener('click', openSettings);
 el('open-help').addEventListener('click', () => el('help-dialog').showModal());
 el('help-close').addEventListener('click', () => el('help-dialog').close());
+// The X in each dialog's top-right corner closes it, same as the footer button.
+for (const btn of document.querySelectorAll('[data-close]')) {
+  btn.addEventListener('click', () => el(btn.dataset.close).close());
+}
 
 el('settings-save').addEventListener('click', async () => {
   const result = await send(MSG.SET_SETTINGS, {

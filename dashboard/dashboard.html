@@ -16,6 +16,9 @@
       <button type="button" id="open-help" class="icon-btn" data-i18n-attr="title:help, aria-label:help">
         <i data-icon="circle-question-mark"></i>
       </button>
+      <button type="button" id="open-settings" class="icon-btn" data-i18n-attr="title:settings, aria-label:settings">
+        <i data-icon="settings"></i>
+      </button>
     </div>
     <div class="header-actions">
       <button type="button" id="refresh"><i data-icon="refresh-cw"></i><span data-i18n="refresh">Refresh</span></button>
@@ -56,6 +59,7 @@
   <p class="status" id="status" role="status"></p>
 
   <dialog id="settings-dialog">
+    <button type="button" class="dialog-close" data-close="settings-dialog" data-i18n-attr="title:action.close, aria-label:action.close"><i data-icon="x"></i></button>
     <form method="dialog" class="settings-form">
       <h2 data-i18n="settings.title">Settings</h2>
 
@@ -105,6 +109,7 @@
   </dialog>
 
   <dialog id="help-dialog">
+    <button type="button" class="dialog-close" data-close="help-dialog" data-i18n-attr="title:action.close, aria-label:action.close"><i data-icon="x"></i></button>
     <article class="help-body">
       <h2><i data-icon="circle-question-mark"></i><span data-i18n="help.title">Usage guide</span></h2>
       <p data-i18n="help.intro"></p>
@@ -122,10 +127,6 @@
       </menu>
     </article>
   </dialog>
-
-  <button type="button" id="open-settings" class="icon-btn" data-i18n-attr="title:settings, aria-label:settings">
-    <i data-icon="settings"></i>
-  </button>
 
   <script type="module" src="dashboard.js"></script>
 </body>

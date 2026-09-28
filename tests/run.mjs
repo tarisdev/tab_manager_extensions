@@ -218,6 +218,23 @@ await test('html has no inline <script> and no on* attributes', async () => {
   }
 });
 
+await test('no native alert/confirm/prompt, and askConfirm is always awaited', async () => {
+  const NATIVE = /\b(?:window\.)?(?:alert|confirm|prompt)\s*\(/;
+  for (const dir of ['utils', 'background', 'popup', 'dashboard']) {
+    for (const file of await readdir(path.join(root, dir))) {
+      if (!file.endsWith('.js')) continue;
+      // Strip comments so the prose in them cannot trip the patterns.
+      const code = (await read(`${dir}/${file}`)).replace(/\/\*[\s\S]*?\*\/|\/\/[^\n]*/g, '');
+      assert.equal(NATIVE.test(code), false, `${dir}/${file} uses a native dialog`);
+      for (const at of code.matchAll(/askConfirm\(/g)) {
+        const before = code.slice(Math.max(0, at.index - 12), at.index);
+        if (before.endsWith('function ')) continue; // the export declaration
+        assert.match(before, /await\s+$/, `${dir}/${file} calls askConfirm without await`);
+      }
+    }
+  }
+});
+
 await test('manifest is MV3 and every referenced file exists', async () => {
   const manifest = JSON.parse(await read('manifest.json'));
   assert.equal(manifest.manifest_version, 3);
@@ -276,6 +293,22 @@ test('placeholders interpolate and survive translation', () => {
 test('an unknown key returns itself and an unknown locale falls back to en', () => {
   assert.equal(setLocale('de'), 'en');
   assert.equal(t('nope.missing'), 'nope.missing');
+});
+
+test('every t() call supplies the placeholders its template needs', async () => {
+  for (const file of ['background/background.js', 'popup/popup.js', 'dashboard/dashboard.js', 'utils/tab-grouper.js']) {
+    const source = await read(file);
+    for (const [call, key, params] of source.matchAll(/t\(\s*'([^']+)'\s*,\s*\{([^}]*)\}/g)) {
+      const needed = new Set([...DICT.en[key].matchAll(/\{(\w+)\}/g)].map((m) => m[1]));
+      const given = new Set([...params.matchAll(/(?:^|,)\s*(\w+)\s*:/g)].map((m) => m[1]));
+      for (const name of needed) {
+        assert.ok(given.has(name), `${file}: ${call} omits {${name}} -> "${DICT.en[key]}"`);
+      }
+      for (const name of given) {
+        assert.ok(needed.has(name), `${file}: ${call} passes an unused {${name}}`);
+      }
+    }
+  }
 });
 
 test('resolveLocale honours an explicit pref, auto stays supported', () => {
