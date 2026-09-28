@@ -107,18 +107,6 @@ export function getCategory(url) {
   return domain || 'other';
 }
 
-export const CATEGORY_LABELS = {
-  sheets: 'Google Sheets',
-  docs: 'Google Docs',
-  drive: 'Google Drive',
-  gmail: 'Gmail',
-  other: 'Other'
-};
-
-export function getCategoryLabel(category) {
-  return CATEGORY_LABELS[category] || category;
-}
-
 /** Attach everything the UI needs to a raw `chrome.tabs.Tab`. */
 export function parseTab(tab) {
   const url = tab.url || '';

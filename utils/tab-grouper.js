@@ -1,4 +1,4 @@
-import { getCategoryLabel } from './tab-parser.js';
+import { categoryLabel, t } from './i18n.js';
 import { GROUP_MODES } from './constants.js';
 
 /** Domain/Google grouping, biggest group first. */
@@ -14,7 +14,7 @@ export function groupByCategory(tabs, duplicateIds = new Set()) {
     .map(([key, group]) => ({
       // Prefixed so keys stay unique across grouping modes in the collapse set.
       key: `${GROUP_MODES.DOMAIN}:${key}`,
-      label: getCategoryLabel(key),
+      label: categoryLabel(key),
       tabs: group,
       count: group.length,
       duplicateCount: group.filter((tab) => duplicateIds.has(tab.id)).length
@@ -34,7 +34,7 @@ export function groupByWindow(tabs, duplicateIds = new Set()) {
   return [...byWindow.entries()]
     .map(([key, group]) => ({
       key: `${GROUP_MODES.WINDOW}:${key}`,
-      label: group[0].windowLabel || `Window ${key}`,
+      label: group[0].windowLabel || t('windowLabel', { n: key }),
       tabs: group,
       count: group.length,
       duplicateCount: group.filter((tab) => duplicateIds.has(tab.id)).length

@@ -1,11 +1,12 @@
-import { DEFAULT_SETTINGS, KEEP_RULES, GROUP_MODES } from './constants.js';
+import { DEFAULT_SETTINGS, KEEP_RULES, GROUP_MODES, LOCALES } from './constants.js';
 
 const STORAGE_KEY = 'settings';
 
 const ALLOWED = {
   duplicateRule: Object.values(KEEP_RULES),
   groupBy: Object.values(GROUP_MODES),
-  theme: ['system', 'dark', 'light']
+  theme: ['system', 'dark', 'light'],
+  locale: LOCALES
 };
 
 /** Only booleans and the enum values above are accepted; anything else is dropped. */

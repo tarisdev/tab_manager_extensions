@@ -13,7 +13,9 @@ import path from 'node:path';
 import { getDuplicateKey, extractGid, extractSpreadsheetId, getCategory, parseTab } from '../utils/tab-parser.js';
 import { findDuplicateGroups, countDuplicates, planCleanup, pickKeeper } from '../utils/duplicate-detector.js';
 import { groupByCategory, groupBySpreadsheet, groupByWindow } from '../utils/tab-grouper.js';
-import { KEEP_RULES } from '../utils/constants.js';
+import { KEEP_RULES, LOCALES } from '../utils/constants.js';
+import { DICT, LOCALES as I18N_LOCALES, t, setLocale, resolveLocale, categoryLabel } from '../utils/i18n.js';
+import { ICON_NAMES } from '../utils/icons.js';
 
 const root = path.dirname(path.dirname(fileURLToPath(import.meta.url)));
 const read = (file) => readFile(path.join(root, file), 'utf8');
@@ -249,6 +251,82 @@ await test('every getElementById target exists in the HTML', async () => {
     const markup = await read(`${dir}/${dir}.html`);
     for (const match of source.matchAll(/el\('([^']+)'\)/g)) {
       assert.equal(markup.includes(`id="${match[1]}"`), true, `${dir}: #${match[1]} missing from HTML`);
+    }
+  }
+});
+
+console.log('\nLocalisation (utils/i18n.js)');
+
+test('every locale has exactly the English keys', () => {
+  const en = Object.keys(DICT.en).sort();
+  for (const locale of I18N_LOCALES) {
+    assert.deepEqual(Object.keys(DICT[locale]).sort(), en, `${locale} key set differs from en`);
+  }
+});
+
+test('placeholders interpolate and survive translation', () => {
+  setLocale('en');
+  assert.equal(t('windowLabel', { n: 2 }), 'Window 2');
+  setLocale('vi');
+  assert.equal(t('windowLabel', { n: 2 }), 'Cửa sổ 2');
+  assert.equal(t('dupCount', { count: 3 }), '×3 trùng');
+  assert.notEqual(t('bulk.selected', { count: 1 }), t('bulk.selected', { count: 5 }));
+});
+
+test('an unknown key returns itself and an unknown locale falls back to en', () => {
+  assert.equal(setLocale('de'), 'en');
+  assert.equal(t('nope.missing'), 'nope.missing');
+});
+
+test('resolveLocale honours an explicit pref, auto stays supported', () => {
+  assert.equal(resolveLocale('vi'), 'vi');
+  assert.equal(resolveLocale('xx'), 'en');
+  assert.ok(I18N_LOCALES.includes(resolveLocale('auto')), 'auto resolved to an unsupported locale');
+  assert.equal(LOCALES.join(','), `auto,${I18N_LOCALES.join(',')}`, 'constants LOCALES is out of sync');
+});
+
+test('categoryLabel names Google surfaces and passes domains through', () => {
+  setLocale('vi');
+  assert.equal(categoryLabel('sheets'), 'Google Sheets');
+  assert.equal(categoryLabel('github'), 'github');
+});
+
+console.log('\nIcons (utils/icons.js)');
+
+await test('every data-icon name in the UI exists in the vendored set', async () => {
+  for (const dir of ['popup', 'dashboard']) {
+    const source = await read(`${dir}/${dir}.js`);
+    const markup = await read(`${dir}/${dir}.html`);
+    const used = [
+      ...[...markup.matchAll(/data-icon="([^"]+)"/g)].map((m) => m[1]),
+      ...[...source.matchAll(/(?:withIcon\(|\bicon\()'([^']+)'/g)].map((m) => m[1])
+    ];
+    for (const name of used) {
+      assert.ok(ICON_NAMES.includes(name), `${dir}: icon "${name}" is not vendored`);
+    }
+  }
+});
+
+await test('every t() key and data-i18n key in the UI exists in the dictionary', async () => {
+  for (const [dir, file] of [
+    ['utils', 'utils/tab-grouper.js'],
+    ['background', 'background/background.js'],
+    ['popup', 'popup/popup.js'],
+    ['dashboard', 'dashboard/dashboard.js']
+  ]) {
+    const source = await read(file);
+    for (const match of source.matchAll(/\bt\('([^']+)'/g)) {
+      assert.ok(match[1] in DICT.en, `${file}: t('${match[1]}') is not in the dictionary`);
+    }
+  }
+  for (const file of ['popup/popup.html', 'dashboard/dashboard.html']) {
+    const markup = await read(file);
+    const keys = [
+      ...[...markup.matchAll(/data-i18n="([^"]+)"/g)].map((m) => m[1]),
+      ...[...markup.matchAll(/(?:title|aria-label|placeholder):([\w.]+)/g)].map((m) => m[1])
+    ];
+    for (const key of keys) {
+      assert.ok(key in DICT.en, `${file}: "${key}" is not in the dictionary`);
     }
   }
 });

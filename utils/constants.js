@@ -25,19 +25,15 @@ export const KEEP_RULES = {
   MANUAL: 'manual'
 };
 
-export const KEEP_RULE_LABELS = {
-  [KEEP_RULES.ACTIVE]: 'Keep Active',
-  [KEEP_RULES.NEWEST]: 'Keep Newest',
-  [KEEP_RULES.OLDEST]: 'Keep Oldest',
-  [KEEP_RULES.MANUAL]: 'Manual'
-};
-
 /** How the dashboard groups the tab list. */
 export const GROUP_MODES = {
   DOMAIN: 'domain',
   WINDOW: 'window',
   SPREADSHEET: 'spreadsheet'
 };
+
+/** UI language: 'auto' follows the browser, the rest are forced (see i18n.js). */
+export const LOCALES = ['auto', 'en', 'vi'];
 
 /** Only settings are persisted; tab state is always read live from chrome.tabs. */
 export const DEFAULT_SETTINGS = {
@@ -46,6 +42,7 @@ export const DEFAULT_SETTINGS = {
   showClosedTabs: false,
   warningEnabled: true,
   theme: 'system',
+  locale: 'auto',
   autoCloseDuplicates: false
 };
 

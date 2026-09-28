@@ -52,7 +52,7 @@ button:focus-visible, select:focus-visible, input:focus-visible {
 }
 button.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
 button.danger { background: var(--danger-bg); border-color: var(--danger); color: var(--danger); }
-.icon-btn { padding: 4px 9px; line-height: 1.1; }
+.icon-btn { padding: 4px 9px; line-height: 1.1; display: inline-flex; align-items: center; }
 
 .header {
   position: sticky;
@@ -68,6 +68,9 @@ button.danger { background: var(--danger-bg); border-color: var(--danger); color
   border-bottom: 1px solid var(--border);
 }
 .brand, .header-actions { display: flex; gap: 8px; align-items: center; }
+/* Lucide SVGs sit next to their label inside text buttons. */
+.header-actions button, .bulkbar button, .help-body h2 { display: inline-flex; align-items: center; gap: 6px; }
+.caret { display: inline-flex; color: var(--muted); }
 
 .stats {
   display: grid;
@@ -88,7 +91,9 @@ button.danger { background: var(--danger-bg); border-color: var(--danger); color
   align-items: center;
   padding: 14px 16px;
 }
-.toolbar input[type="search"] { flex: 1 1 240px; }
+.search-box { position: relative; flex: 1 1 240px; display: flex; }
+.search-box .search-icon { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); color: var(--muted); pointer-events: none; }
+.search-box input[type="search"] { width: 100%; padding-left: 32px; }
 .filters { display: flex; flex-wrap: wrap; gap: 6px; }
 .chip {
   border-radius: 999px;
@@ -199,7 +204,7 @@ details.menu[open] summary { border-color: var(--accent); }
 .menu-panel button:hover { background: var(--bg-alt); }
 .menu-label { color: var(--muted); font-size: 11px; text-transform: uppercase; padding: 4px 8px; }
 
-.empty { color: var(--muted); padding: 20px 4px; }
+.empty { color: var(--muted); padding: 20px 4px; display: flex; align-items: center; gap: 8px; }
 .status {
   position: fixed;
   bottom: 16px;
@@ -233,6 +238,13 @@ dialog::backdrop { background: rgba(0, 0, 0, 0.45); }
 .settings-form label.checkbox { flex-direction: row; align-items: center; gap: 8px; }
 .hint { color: var(--muted); font-size: 12px; margin: -6px 0 0; }
 .dialog-actions { display: flex; justify-content: flex-end; gap: 8px; margin: 6px 0 0; padding: 0; }
+
+#help-dialog { min-width: 420px; }
+.help-body { max-width: 520px; }
+.help-body h2 { margin: 0 0 8px; font-size: 16px; }
+.help-body p { margin: 0 0 10px; color: var(--muted); }
+.help-body ul { margin: 0; padding-left: 18px; display: flex; flex-direction: column; gap: 6px; }
+.help-body li { color: var(--fg); }
 
 #open-settings { position: fixed; right: 16px; bottom: 16px; z-index: 8; }
 

@@ -1,7 +1,8 @@
 import { MSG, KEEP_RULES, GROUP_MODES, FILTER } from '../utils/constants.js';
 import { groupTabs } from '../utils/tab-grouper.js';
-import { getCategoryLabel } from '../utils/tab-parser.js';
+import { categoryLabel, t, applyTranslations, resolveLocale } from '../utils/i18n.js';
 import { faviconUrl } from '../utils/favicon.js';
+import { hydrateIcons, icon, withIcon } from '../utils/icons.js';
 
 async function send(type, payload = {}) {
   try {
@@ -36,6 +37,7 @@ function applyTheme() {
   const theme = ui.settings?.theme || 'system';
   if (theme === 'system') document.documentElement.removeAttribute('data-theme');
   else document.documentElement.setAttribute('data-theme', theme);
+  applyTranslations();
 }
 
 /** Tabs left after applying the active search box and filter chip. */
@@ -54,10 +56,10 @@ function visibleTabs() {
 function renderStats() {
   const { totalTabs, totalWindows, duplicateTabs, sheetsTabs } = ui.state.stats;
   const cells = [
-    { value: totalTabs, label: 'Total Tabs' },
-    { value: totalWindows, label: 'Windows' },
-    { value: duplicateTabs, label: 'Duplicate Tabs', cls: 'dup' },
-    { value: sheetsTabs, label: 'Google Sheets', cls: 'sheets' }
+    { value: totalTabs, label: t('stat.totalTabs') },
+    { value: totalWindows, label: t('stat.windows') },
+    { value: duplicateTabs, label: t('stat.duplicateTabs'), cls: 'dup' },
+    { value: sheetsTabs, label: t('stat.googleSheets'), cls: 'sheets' }
   ];
   el('stats').replaceChildren(...cells.map(({ value, label, cls }) => {
     const box = document.createElement('div');
@@ -77,12 +79,12 @@ function renderStats() {
 function renderFilters() {
   const categories = [...new Set(ui.state.tabs.map((tab) => tab.category))];
   const chips = [
-    { key: FILTER.ALL, label: 'All', count: ui.state.stats.totalTabs },
-    { key: FILTER.DUPLICATES, label: 'Duplicates', count: ui.state.stats.duplicateTabs },
-    { key: FILTER.ACTIVE, label: 'Active', count: ui.state.tabs.filter((t) => t.active).length },
+    { key: FILTER.ALL, label: t('filter.all'), count: ui.state.stats.totalTabs },
+    { key: FILTER.DUPLICATES, label: t('filter.duplicates'), count: ui.state.stats.duplicateTabs },
+    { key: FILTER.ACTIVE, label: t('filter.active'), count: ui.state.tabs.filter((tab) => tab.active).length },
     ...categories.map((key) => ({
       key,
-      label: getCategoryLabel(key),
+      label: categoryLabel(key),
       count: ui.state.tabs.filter((tab) => tab.category === key).length
     }))
   ];
@@ -107,7 +109,7 @@ function windowOptions(currentWindowId) {
     .filter((id, index, all) => all.indexOf(id) === index && id !== currentWindowId)
     .map((id) => {
       const tab = ui.state.tabs.find((item) => item.windowId === id);
-      return { id, label: tab?.windowLabel || `Window ${id}` };
+      return { id, label: tab?.windowLabel || t('windowLabel', { n: id }) };
     });
 }
 
@@ -124,28 +126,29 @@ function buildMenu(tab, duplicateIds) {
   const details = document.createElement('details');
   details.className = 'menu';
   const summary = document.createElement('summary');
-  summary.textContent = '⋮';
-  summary.title = 'More actions';
+  summary.append(icon('ellipsis-vertical'));
+  summary.title = t('action.more');
+  summary.setAttribute('aria-label', t('action.more'));
   const panel = document.createElement('div');
   panel.className = 'menu-panel';
 
   panel.append(
-    menuButton('Activate', () => send(MSG.ACTIVATE_TAB, { tabId: tab.id, windowId: tab.windowId })),
-    menuButton('Close', () => send(MSG.CLOSE_TABS, { tabIds: [tab.id] }))
+    menuButton(t('action.activate'), () => send(MSG.ACTIVATE_TAB, { tabId: tab.id, windowId: tab.windowId })),
+    menuButton(t('action.close'), () => send(MSG.CLOSE_TABS, { tabIds: [tab.id] }))
   );
 
   if (duplicateIds.has(tab.id)) {
-    panel.append(menuButton('Close Other Tabs', () => send(MSG.CLOSE_OTHER_TABS, { tabId: tab.id })));
+    panel.append(menuButton(t('action.closeOthers'), () => send(MSG.CLOSE_OTHER_TABS, { tabId: tab.id })));
   }
 
   const targets = windowOptions(tab.windowId);
   if (targets.length > 0) {
     const label = document.createElement('div');
     label.className = 'menu-label';
-    label.textContent = 'Move to window';
+    label.textContent = t('moveToWindow');
     const select = document.createElement('select');
-    select.setAttribute('aria-label', 'Move to window');
-    select.append(new Option('Choose window…', ''));
+    select.setAttribute('aria-label', t('moveToWindow'));
+    select.append(new Option(t('chooseWindow'), ''));
     for (const target of targets) select.append(new Option(target.label, String(target.id)));
     select.addEventListener('change', () => {
       if (select.value) send(MSG.MOVE_TABS, { tabIds: [tab.id], windowId: Number(select.value) });
@@ -155,13 +158,13 @@ function buildMenu(tab, duplicateIds) {
   }
 
   panel.append(
-    menuButton('Copy URL', async () => {
+    menuButton(t('action.copyUrl'), async () => {
       await navigator.clipboard.writeText(tab.url);
-      setStatus('URL copied');
+      setStatus(t('status.urlCopied'));
     }),
-    menuButton('Copy Title + URL', async () => {
+    menuButton(t('action.copyTitleUrl'), async () => {
       await navigator.clipboard.writeText(`${tab.title}\n${tab.url}`);
-      setStatus('Title and URL copied');
+      setStatus(t('status.titleUrlCopied'));
     })
   );
 
@@ -199,19 +202,19 @@ function buildTabRow(tab, duplicateIds) {
   title.textContent = tab.title || tab.url;
   const sub = document.createElement('div');
   sub.className = 'tab-sub';
-  const parts = [tab.domain || tab.url, `${tab.windowLabel} • Tab ${tab.id}`];
-  if (tab.isGoogleSheets) parts.push(`sheet ${tab.gid}`);
-  if (tab.active) parts.unshift('● ACTIVE');
+  const parts = [tab.domain || tab.url, `${tab.windowLabel} • ${t('tabId', { id: tab.id })}`];
+  if (tab.isGoogleSheets) parts.push(t('sheetLabel', { gid: tab.gid }));
+  if (tab.active) parts.unshift(t('activeTag'));
   sub.textContent = parts.join(' • ');
   info.append(title, sub);
 
   const actions = document.createElement('div');
   actions.className = 'tab-actions';
-  const open = menuButton(tab.active ? 'Active' : 'Open', () => {
+  const open = menuButton(tab.active ? t('action.active') : t('action.open'), () => {
     send(MSG.ACTIVATE_TAB, { tabId: tab.id, windowId: tab.windowId });
   });
   if (tab.active) open.disabled = true;
-  const close = menuButton('Close', () => send(MSG.CLOSE_TABS, { tabIds: [tab.id] }));
+  const close = menuButton(t('action.close'), () => send(MSG.CLOSE_TABS, { tabIds: [tab.id] }));
   actions.append(open, close, buildMenu(tab, duplicateIds));
 
   row.append(select, img, info, actions);
@@ -230,26 +233,26 @@ function buildGroup(group, duplicateIds) {
 
   const caret = document.createElement('span');
   caret.className = 'caret';
-  caret.textContent = isCollapsed ? '▶' : '▼';
+  caret.append(icon(isCollapsed ? 'chevron-right' : 'chevron-down'));
   const title = document.createElement('span');
   title.className = 'group-title';
   title.textContent = group.label;
   const count = document.createElement('span');
   count.className = 'group-meta';
-  count.textContent = `${group.count} tab${group.count === 1 ? '' : 's'}`;
+  count.textContent = t('tabCount', { n: group.count });
   header.append(caret, title, count);
 
   // Only duplicates are closable, so the badge appears only when there are some.
   if (group.duplicateCount > 0) {
     const badge = document.createElement('span');
     badge.className = 'badge';
-    badge.textContent = `×${group.duplicateCount} duplicate`;
+    badge.textContent = t('dupCount', { count: group.duplicateCount });
     header.append(badge);
   }
   if (group.sheetCount > 1) {
     const sheets = document.createElement('span');
     sheets.className = 'group-meta';
-    sheets.textContent = `${group.sheetCount} sheets`;
+    sheets.textContent = t('sheetCount', { count: group.sheetCount });
     header.append(sheets);
   }
 
@@ -277,7 +280,7 @@ function renderGroups() {
   if (tabs.length === 0) {
     const empty = document.createElement('p');
     empty.className = 'empty';
-    empty.textContent = ui.query ? 'No tabs match your search.' : 'No tabs to show.';
+    empty.textContent = ui.query ? t('status.noResults') : t('status.noTabs');
     container.replaceChildren(empty);
     return;
   }
@@ -288,7 +291,8 @@ function renderGroups() {
     // Reachable in spreadsheet mode when the search matched no Google Sheet.
     const empty = document.createElement('p');
     empty.className = 'empty';
-    empty.textContent = 'No Google Sheets open.';
+    withIcon(empty, 'table');
+    empty.append(document.createTextNode(t('status.noSheets')));
     container.replaceChildren(empty);
     return;
   }
@@ -298,16 +302,17 @@ function renderGroups() {
 function renderBulkbar() {
   const bar = el('bulkbar');
   bar.hidden = ui.selected.size === 0;
-  el('bulk-count').textContent = `${ui.selected.size} selected`;
+  el('bulk-count').textContent = t('bulk.selected', { count: ui.selected.size });
 
   const select = el('bulk-window');
   const current = select.value;
-  select.replaceChildren(new Option('Move to window…', ''));
+  select.replaceChildren(new Option(t('moveToWindow'), ''));
   for (const { id, label } of windowOptions(null)) select.append(new Option(label, String(id)));
   select.value = current;
 }
 
 function render() {
+  resolveLocale(ui.settings?.locale);
   applyTheme();
   renderStats();
   renderFilters();
@@ -318,7 +323,7 @@ function render() {
 async function load() {
   const result = await send(MSG.GET_STATE);
   if (!result.ok) {
-    setStatus(result.error || 'Cannot reach the background worker.', true);
+    setStatus(result.error || t('status.workerDown'), true);
     return;
   }
   ui.state = result.state;
@@ -332,32 +337,33 @@ async function cleanDuplicates() {
   const rule = ui.settings.duplicateRule || KEEP_RULES.ACTIVE;
   const preview = await send(MSG.CLEAN_DUPLICATES, { rule, dryRun: true });
   if (!preview.ok) {
-    setStatus(preview.error || 'Cleanup failed', true);
+    setStatus(preview.error || t('status.cleanupFailed'), true);
     return;
   }
   if (preview.total === 0) {
-    setStatus('No duplicate tabs to clean.');
+    setStatus(t('status.nothingToClean'));
     return;
   }
 
-  const lines = preview.plan.map((entry) => `• ${entry.title || entry.domain} — ${entry.count} → keep 1`);
+  const lines = preview.plan.map((entry) =>
+    t('confirm.planLine', { title: entry.title || entry.domain, count: entry.count }));
   const confirmed = window.confirm(
-    `Found ${preview.total} duplicate tab(s).\n\n${lines.join('\n')}\n\nTotal tabs to close: ${preview.total}`
+    t('confirm.cleanPlan', { count: preview.total, plan: lines.join('\n'), total: preview.total })
   );
   if (!confirmed) return;
 
   const result = await send(MSG.CLEAN_DUPLICATES, { rule, dryRun: false });
-  setStatus(result.ok && result.closed ? `✓ ${result.closed} duplicate tab(s) closed` : 'Nothing closed',
+  setStatus(result.ok && result.closed ? t('status.dupesClosed', { count: result.closed }) : t('status.nothingClosed'),
     !result.ok);
 }
 
 async function closeSelected() {
   const ids = [...ui.selected];
   if (ids.length === 0) return;
-  if (!window.confirm(`Close ${ids.length} tab(s)?`)) return;
+  if (!window.confirm(t('confirm.closeSelected', { count: ids.length }))) return;
   const result = await send(MSG.CLOSE_TABS, { tabIds: ids });
   ui.selected.clear();
-  setStatus(result.ok && result.closed ? `✓ ${result.closed} tab(s) closed` : 'Nothing closed', !result.ok);
+  setStatus(result.ok && result.closed ? t('status.tabsClosed', { count: result.closed }) : t('status.nothingClosed'), !result.ok);
 }
 
 async function moveSelected() {
@@ -365,13 +371,14 @@ async function moveSelected() {
   const ids = [...ui.selected];
   if (!windowId || ids.length === 0) return;
   const result = await send(MSG.MOVE_TABS, { tabIds: ids, windowId });
-  if (result.ok) setStatus(`✓ Moved ${ids.length} tab(s)`);
-  else setStatus(result.error || 'Move failed', true);
+  if (result.ok) setStatus(t('status.moved', { count: ids.length }));
+  else setStatus(result.error || t('status.moveFailed'), true);
 }
 
 function openSettings() {
   el('set-rule').value = ui.settings.duplicateRule || KEEP_RULES.ACTIVE;
   el('set-theme').value = ui.settings.theme || 'system';
+  el('set-locale').value = ui.settings.locale || 'auto';
   el('set-warning').checked = ui.settings.warningEnabled !== false;
   el('set-autoclose').checked = ui.settings.autoCloseDuplicates === true;
   el('settings-dialog').showModal();
@@ -414,13 +421,13 @@ el('collapse-all').addEventListener('click', () => {
 el('close-all-dupes').addEventListener('click', async () => {
   const total = ui.state.stats.duplicateTabs;
   if (total === 0) {
-    setStatus('No duplicate tabs to close.');
+    setStatus(t('status.noDupesToClose'));
     return;
   }
-  if (!window.confirm(`Close ALL ${total} duplicate tab(s)? One copy of each is kept.`)) return;
+  if (!window.confirm(t('confirm.closeAll', { count: total }))) return;
   const ids = ui.state.duplicateGroups.flatMap((group) => group.tabIds.slice(1));
   const result = await send(MSG.CLOSE_TABS, { tabIds: ids });
-  setStatus(result.ok && result.closed ? `✓ ${result.closed} tab(s) closed` : 'Nothing closed', !result.ok);
+  setStatus(result.ok && result.closed ? t('status.tabsClosed', { count: result.closed }) : t('status.nothingClosed'), !result.ok);
 });
 
 el('theme-toggle').addEventListener('click', async () => {
@@ -434,12 +441,15 @@ el('theme-toggle').addEventListener('click', async () => {
 });
 
 el('open-settings').addEventListener('click', openSettings);
+el('open-help').addEventListener('click', () => el('help-dialog').showModal());
+el('help-close').addEventListener('click', () => el('help-dialog').close());
 
 el('settings-save').addEventListener('click', async () => {
   const result = await send(MSG.SET_SETTINGS, {
     patch: {
       duplicateRule: el('set-rule').value,
       theme: el('set-theme').value,
+      locale: el('set-locale').value,
       warningEnabled: el('set-warning').checked,
       autoCloseDuplicates: el('set-autoclose').checked
     }
@@ -447,7 +457,7 @@ el('settings-save').addEventListener('click', async () => {
   if (result.ok) {
     ui.settings = result.settings;
     render();
-    setStatus('Settings saved');
+    setStatus(t('status.settingsSaved'));
   }
 });
 
@@ -457,7 +467,7 @@ el('settings-reset').addEventListener('click', async () => {
     ui.settings = result.settings;
     el('settings-dialog').close();
     render();
-    setStatus('Settings reset');
+    setStatus(t('status.settingsReset'));
   }
 });
 
@@ -468,6 +478,9 @@ chrome.runtime.onMessage.addListener((message) => {
     render();
   }
 });
+
+// Static <i data-icon="…"> placeholders become real SVGs once the DOM is parsed.
+hydrateIcons();
 
 load();
 

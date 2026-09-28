@@ -65,6 +65,10 @@ button.primary { background: var(--accent); border-color: var(--accent); color: 
 button.danger { background: var(--danger-bg); border-color: var(--danger); color: var(--danger); }
 .icon-btn { padding: 4px 8px; line-height: 1; }
 
+/* Lucide SVGs inherit currentColor; keep them aligned with their label. */
+button { display: inline-flex; align-items: center; justify-content: center; gap: 6px; }
+button svg, .empty svg { flex: none; }
+
 .stats {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
@@ -82,11 +86,12 @@ button.danger { background: var(--danger-bg); border-color: var(--danger); color
 .stat.dup .stat-value { color: var(--danger); }
 .stat.sheets .stat-value { color: var(--ok); }
 
-.search-wrap { padding: 0 12px 10px; }
+.search-wrap { position: relative; padding: 0 12px 10px; }
+.search-icon { position: absolute; left: 22px; top: 9px; color: var(--muted); pointer-events: none; }
 input[type="search"] {
   width: 100%;
   font: inherit;
-  padding: 7px 10px;
+  padding: 7px 10px 7px 30px;
   border: 1px solid var(--border);
   border-radius: var(--radius);
   background: var(--bg-alt);
@@ -146,7 +151,8 @@ section h2 {
 .result .domain { color: var(--muted); font-size: 11px; }
 img.favicon { width: 16px; height: 16px; border-radius: 3px; flex: none; }
 
-.empty { color: var(--muted); padding: 10px 12px; border-top: 1px solid var(--border); }
+.empty { color: var(--muted); padding: 10px 12px; border-top: 1px solid var(--border); display: flex; align-items: center; gap: 6px; }
+.empty svg { color: var(--ok); }
 
 .actions { display: flex; flex-direction: column; gap: 6px; padding: 10px 12px; }
 

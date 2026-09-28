@@ -10,37 +10,45 @@
   <header class="header">
     <div class="brand">
       <h1>TAB MANAGER</h1>
-      <button type="button" id="theme-toggle" class="icon-btn" title="Toggle theme" aria-label="Toggle theme">◐</button>
+      <button type="button" id="theme-toggle" class="icon-btn" data-i18n-attr="title:themeToggle, aria-label:themeToggle">
+        <i data-icon="sun-moon"></i>
+      </button>
+      <button type="button" id="open-help" class="icon-btn" data-i18n-attr="title:help, aria-label:help">
+        <i data-icon="circle-question-mark"></i>
+      </button>
     </div>
     <div class="header-actions">
-      <button type="button" id="refresh">Refresh</button>
-      <button type="button" id="collapse-all">Collapse all</button>
-      <button type="button" id="clean" class="primary">Clean Duplicates</button>
-      <button type="button" id="close-all-dupes" class="danger">Close All Duplicate Tabs</button>
+      <button type="button" id="refresh"><i data-icon="refresh-cw"></i><span data-i18n="refresh">Refresh</span></button>
+      <button type="button" id="collapse-all"><i data-icon="chevrons-down-up"></i><span data-i18n="collapseAll">Collapse all</span></button>
+      <button type="button" id="clean" class="primary"><i data-icon="eraser"></i><span data-i18n="cleanDuplicates">Clean Duplicates</span></button>
+      <button type="button" id="close-all-dupes" class="danger"><i data-icon="trash"></i><span data-i18n="closeAllDuplicates">Close All Duplicate Tabs</span></button>
     </div>
   </header>
 
   <section class="stats" id="stats" aria-live="polite"></section>
 
   <section class="toolbar">
-    <input type="search" id="search" placeholder="🔎 Search tabs..." aria-label="Search tabs" autocomplete="off">
-    <div class="filters" id="filters" role="group" aria-label="Filter tabs"></div>
+    <div class="search-box">
+      <i class="search-icon" data-icon="search"></i>
+      <input type="search" id="search" autocomplete="off" data-i18n-attr="placeholder:searchPlaceholder, aria-label:searchTabs">
+    </div>
+    <div class="filters" id="filters" role="group" data-i18n-attr="aria-label:filter.label"></div>
     <label class="group-mode">
-      Group by
-      <select id="group-mode" aria-label="Group by">
-        <option value="domain">Domain</option>
-        <option value="window">Window</option>
-        <option value="spreadsheet">Google Sheets file</option>
+      <span data-i18n="groupBy">Group by</span>
+      <select id="group-mode" data-i18n-attr="aria-label:groupBy">
+        <option value="domain" data-i18n="groupBy.domain">Domain</option>
+        <option value="window" data-i18n="groupBy.window">Window</option>
+        <option value="spreadsheet" data-i18n="groupBy.spreadsheet">Google Sheets file</option>
       </select>
     </label>
   </section>
 
   <section class="bulkbar" id="bulkbar" hidden>
-    <span id="bulk-count">0 selected</span>
-    <button type="button" id="bulk-close" class="danger">Close Selected</button>
-    <select id="bulk-window" aria-label="Move selected to window"></select>
-    <button type="button" id="bulk-move">Move Selected</button>
-    <button type="button" id="bulk-clear">Clear</button>
+    <span id="bulk-count"></span>
+    <button type="button" id="bulk-close" class="danger"><i data-icon="trash"></i><span data-i18n="bulk.close">Close Selected</span></button>
+    <select id="bulk-window" data-i18n-attr="aria-label:moveToWindow"></select>
+    <button type="button" id="bulk-move"><i data-icon="move-right"></i><span data-i18n="bulk.move">Move Selected</span></button>
+    <button type="button" id="bulk-clear"><i data-icon="x"></i><span data-i18n="bulk.clear">Clear</span></button>
   </section>
 
   <main class="groups" id="groups"></main>
@@ -49,43 +57,75 @@
 
   <dialog id="settings-dialog">
     <form method="dialog" class="settings-form">
-      <h2>Settings</h2>
+      <h2 data-i18n="settings.title">Settings</h2>
 
       <label>
-        Duplicate handling
+        <span data-i18n="settings.duplicateHandling">Duplicate handling</span>
         <select id="set-rule">
-          <option value="keep-active">Keep Active tab</option>
-          <option value="keep-newest">Keep Newest tab</option>
-          <option value="keep-oldest">Keep Oldest tab</option>
+          <option value="keep-active" data-i18n="settings.keepActive">Keep Active tab</option>
+          <option value="keep-newest" data-i18n="settings.keepNewest">Keep Newest tab</option>
+          <option value="keep-oldest" data-i18n="settings.keepOldest">Keep Oldest tab</option>
         </select>
       </label>
 
       <label>
-        Theme
+        <span data-i18n="settings.theme">Theme</span>
         <select id="set-theme">
-          <option value="system">System</option>
-          <option value="light">Light</option>
-          <option value="dark">Dark</option>
+          <option value="system" data-i18n="settings.themeSystem">System</option>
+          <option value="light" data-i18n="settings.themeLight">Light</option>
+          <option value="dark" data-i18n="settings.themeDark">Dark</option>
+        </select>
+      </label>
+
+      <label>
+        <span data-i18n="settings.language">Language</span>
+        <select id="set-locale">
+          <option value="auto" data-i18n="settings.langAuto">Auto (browser language)</option>
+          <option value="en" data-i18n="settings.langEn">English</option>
+          <option value="vi" data-i18n="settings.langVi">Tiếng Việt</option>
         </select>
       </label>
 
       <label class="checkbox">
-        <input type="checkbox" id="set-warning"> Warn when a Google Sheet is already open
+        <input type="checkbox" id="set-warning">
+        <span data-i18n="settings.warning">Warn when a Google Sheet is already open</span>
       </label>
 
       <label class="checkbox">
-        <input type="checkbox" id="set-autoclose"> Automatically close duplicates
+        <input type="checkbox" id="set-autoclose">
+        <span data-i18n="settings.autoclose">Automatically close duplicates</span>
       </label>
-      <p class="hint">Off by default - the extension only reports duplicates.</p>
+      <p class="hint" data-i18n="settings.hint">Off by default - the extension only reports duplicates.</p>
 
       <menu class="dialog-actions">
-        <button type="button" id="settings-reset" class="danger">Reset</button>
-        <button type="submit" id="settings-save" class="primary">Save</button>
+        <button type="button" id="settings-reset" class="danger" data-i18n="settings.reset">Reset</button>
+        <button type="submit" id="settings-save" class="primary" data-i18n="settings.save">Save</button>
       </menu>
     </form>
   </dialog>
 
-  <button type="button" id="open-settings" class="icon-btn" title="Settings" aria-label="Settings">⚙</button>
+  <dialog id="help-dialog">
+    <article class="help-body">
+      <h2><i data-icon="circle-question-mark"></i><span data-i18n="help.title">Usage guide</span></h2>
+      <p data-i18n="help.intro"></p>
+      <ul>
+        <li data-i18n="help.badge"></li>
+        <li data-i18n="help.popup"></li>
+        <li data-i18n="help.dashboard"></li>
+        <li data-i18n="help.groups"></li>
+        <li data-i18n="help.clean"></li>
+        <li data-i18n="help.sheets"></li>
+        <li data-i18n="help.settings"></li>
+      </ul>
+      <menu class="dialog-actions">
+        <button type="button" id="help-close" class="primary" data-i18n="action.close">Close</button>
+      </menu>
+    </article>
+  </dialog>
+
+  <button type="button" id="open-settings" class="icon-btn" data-i18n-attr="title:settings, aria-label:settings">
+    <i data-icon="settings"></i>
+  </button>
 
   <script type="module" src="dashboard.js"></script>
 </body>

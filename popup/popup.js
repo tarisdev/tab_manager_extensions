@@ -1,5 +1,7 @@
 import { MSG, KEEP_RULES } from '../utils/constants.js';
 import { faviconUrl } from '../utils/favicon.js';
+import { applyTranslations, resolveLocale, t } from '../utils/i18n.js';
+import { hydrateIcons, withIcon } from '../utils/icons.js';
 
 /** Thin wrapper: all Chrome access happens in the background worker. */
 async function send(type, payload = {}) {
@@ -28,15 +30,23 @@ function applyTheme() {
   const theme = ui.settings?.theme || 'system';
   if (theme === 'system') document.documentElement.removeAttribute('data-theme');
   else document.documentElement.setAttribute('data-theme', theme);
+  applyTranslations();
+}
+
+function render() {
+  resolveLocale(ui.settings?.locale);
+  applyTheme();
+  renderStats();
+  renderSearchResults();
 }
 
 function renderStats() {
   const { totalTabs, totalWindows, duplicateTabs, sheetsTabs } = ui.state.stats;
   const cells = [
-    { value: totalTabs, label: 'Tabs' },
-    { value: totalWindows, label: 'Windows' },
-    { value: duplicateTabs, label: 'Dup', cls: 'dup' },
-    { value: sheetsTabs, label: 'Sheets', cls: 'sheets' }
+    { value: totalTabs, label: t('stat.tabs') },
+    { value: totalWindows, label: t('stat.windows') },
+    { value: duplicateTabs, label: t('stat.dup'), cls: 'dup' },
+    { value: sheetsTabs, label: t('stat.sheets'), cls: 'sheets' }
   ];
   el('stats').replaceChildren(...cells.map(({ value, label, cls }) => {
     const box = document.createElement('div');
@@ -63,7 +73,7 @@ function renderSearchResults() {
 
   const matches = ui.state.tabs.filter((tab) => tab.searchable.includes(query)).slice(0, 25);
   if (matches.length === 0) {
-    container.replaceChildren(el('p', 'empty', 'No tabs match your search.'));
+    container.replaceChildren(el('p', 'empty', t('status.noResults')));
     return;
   }
   container.replaceChildren(...matches.map((tab) => {
@@ -95,12 +105,15 @@ function renderDuplicates() {
   const container = el('duplicates');
   const groups = ui.state.duplicateGroups;
   if (groups.length === 0) {
-    container.replaceChildren(el('p', 'empty', 'No duplicates found. 🎉'));
+    const empty = el('p', 'empty');
+    withIcon(empty, 'circle-check');
+    empty.append(document.createTextNode(t('status.noDupes')));
+    container.replaceChildren(empty);
     return;
   }
 
   const heading = document.createElement('h2');
-  heading.textContent = `Duplicates (${ui.state.stats.duplicateTabs} closable)`;
+  heading.textContent = t('dupHeading', { count: ui.state.stats.duplicateTabs });
   const rows = groups.slice(0, 8).map((group) => {
     const row = document.createElement('div');
     row.className = 'dup-group';
@@ -112,7 +125,7 @@ function renderDuplicates() {
     const meta = document.createElement('div');
     meta.className = 'dup-meta';
     meta.textContent = group.isGoogleSheets
-      ? `${group.domain} · sheet ${group.gid}`
+      ? `${group.domain} · ${t('sheetLabel', { gid: group.gid })}`
       : group.domain;
     info.append(title, meta);
 
@@ -123,8 +136,8 @@ function renderDuplicates() {
     const target = group.tabIds[0];
     const keep = document.createElement('button');
     keep.type = 'button';
-    keep.textContent = 'Switch';
-    keep.title = 'Jump to the first copy';
+    keep.textContent = t('action.switch');
+    keep.title = t('action.jumpFirstCopy');
     keep.addEventListener('click', async () => {
       const tab = ui.state.tabs.find((item) => item.id === target);
       await send(MSG.ACTIVATE_TAB, { tabId: target, windowId: tab?.windowId });
@@ -134,13 +147,14 @@ function renderDuplicates() {
     const close = document.createElement('button');
     close.type = 'button';
     close.className = 'danger';
-    close.textContent = `Close ${group.count - 1}`;
-    close.title = 'Close the other copies';
+    withIcon(close, 'trash');
+    close.append(document.createTextNode(t('action.closeN', { count: group.count - 1 })));
+    close.title = t('action.closeCopies');
     close.addEventListener('click', async () => {
       const result = await send(MSG.CLOSE_OTHER_TABS, { tabId: target });
       setStatus(result.ok && result.closed
-        ? `Closed ${result.closed} duplicate tab(s).`
-        : 'Nothing to close.', !result.ok);
+        ? t('status.sheetsClosed', { count: result.closed })
+        : t('status.nothingToClose'), !result.ok);
     });
 
     row.append(info, badge, keep, close);
@@ -157,7 +171,7 @@ async function load() {
     ui.settings = result.settings;
     render();
   } else {
-    setStatus('Cannot reach the background worker.', true);
+    setStatus(t('status.workerDown'), true);
   }
 }
 
@@ -183,29 +197,29 @@ el('clean').addEventListener('click', async () => {
   const rule = ui.settings?.duplicateRule || KEEP_RULES.ACTIVE;
   const preview = await send(MSG.CLEAN_DUPLICATES, { rule, dryRun: true });
   if (!preview.ok) {
-    setStatus(preview.error || 'Cleanup failed', true);
+    setStatus(preview.error || t('status.cleanupFailed'), true);
     return;
   }
   if (preview.total === 0) {
-    setStatus('Nothing to clean.');
+    setStatus(t('status.nothingToClean'));
     return;
   }
-  if (!window.confirm(`Close ${preview.total} duplicate tab(s)?`)) return;
+  if (!window.confirm(t('confirm.clean', { count: preview.total }))) return;
   const result = await send(MSG.CLEAN_DUPLICATES, { rule, dryRun: false });
-  setStatus(result.ok && result.closed ? `✓ ${result.closed} duplicate tab(s) closed.` : 'Nothing closed.',
+  setStatus(result.ok && result.closed ? t('status.dupesClosed', { count: result.closed }) : t('status.nothingClosed'),
     !result.ok);
 });
 
 el('close-all-dupes').addEventListener('click', async () => {
   const total = ui.state.stats.duplicateTabs;
   if (total === 0) {
-    setStatus('No duplicate tabs to close.');
+    setStatus(t('status.noDupesToClose'));
     return;
   }
-  if (!window.confirm(`Close ALL ${total} duplicate tab(s)? Keep one copy of each.`)) return;
+  if (!window.confirm(t('confirm.closeAll', { count: total }))) return;
   const ids = ui.state.duplicateGroups.flatMap((group) => group.tabIds.slice(1));
   const result = await send(MSG.CLOSE_TABS, { tabIds: ids });
-  setStatus(result.ok && result.closed ? `✓ ${result.closed} tab(s) closed.` : 'Nothing closed.', !result.ok);
+  setStatus(result.ok && result.closed ? t('status.tabsClosed', { count: result.closed }) : t('status.nothingClosed'), !result.ok);
 });
 
 el('open-dashboard').addEventListener('click', () => {
@@ -219,5 +233,8 @@ chrome.runtime.onMessage.addListener((message) => {
     render();
   }
 });
+
+// Static <i data-icon="…"> placeholders become real SVGs once the DOM is parsed.
+hydrateIcons();
 
 load();

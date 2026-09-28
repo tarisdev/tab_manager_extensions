@@ -2,6 +2,7 @@ import { parseTab } from '../utils/tab-parser.js';
 import { findDuplicateGroups, countDuplicates, duplicateTabIds, planCleanup } from '../utils/duplicate-detector.js';
 import { getSettings, setSettings, resetSettings } from '../utils/storage.js';
 import { MSG, KEEP_RULES, REFRESH_DEBOUNCE_MS } from '../utils/constants.js';
+import { resolveLocale, t } from '../utils/i18n.js';
 
 /**
  * Single source of truth for tab state. The service worker owns every
@@ -27,12 +28,12 @@ async function buildState() {
 
   const windowLabels = new Map();
   windows.forEach((win, order) => {
-    windowLabels.set(win.id, `Window ${win.focused ? 1 : order + 1}`);
+    windowLabels.set(win.id, t('windowLabel', { n: win.focused ? 1 : order + 1 }));
   });
 
   const parsed = tabs.map((tab) => {
     const item = parseTab(tab);
-    item.windowLabel = windowLabels.get(tab.windowId) || `Window ${tab.windowId}`;
+    item.windowLabel = windowLabels.get(tab.windowId) || t('windowLabel', { n: tab.windowId });
     return item;
   });
 
@@ -80,8 +81,12 @@ async function refresh() {
   }
   refreshInFlight = (async () => {
     try {
+      // Settings decide the language first: the window labels built below go
+      // through t(), so the whole payload has to speak a single language.
+      const settings = await getSettings();
+      resolveLocale(settings.locale);
       cachedState = await buildState();
-      await updateBadge(cachedState, await getSettings());
+      await updateBadge(cachedState, settings);
       await broadcastState();
     } catch (error) {
       console.warn('[tab-manager] refresh failed', error);
@@ -241,11 +246,17 @@ const HANDLERS = {
   },
 
   async [MSG.SET_SETTINGS]({ patch }) {
-    return { settings: await setSettings(patch) };
+    const settings = await setSettings(patch);
+    // The window labels inside the state are translated, so switching language
+    // means the cached state has to be rebuilt and pushed again.
+    await refresh();
+    return { settings };
   },
 
   async [MSG.RESET_SETTINGS]() {
-    return { settings: await resetSettings() };
+    const settings = await resetSettings();
+    await refresh();
+    return { settings };
   },
 
   async [MSG.OPEN_DASHBOARD]() {

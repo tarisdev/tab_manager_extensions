@@ -9,23 +9,34 @@
   <header class="header">
     <h1>TAB MANAGER</h1>
     <div class="header-actions">
-      <button type="button" id="theme-toggle" class="icon-btn" title="Toggle theme" aria-label="Toggle theme">◐</button>
-      <button type="button" id="refresh" class="icon-btn" title="Refresh" aria-label="Refresh">⟳</button>
+      <button type="button" id="theme-toggle" class="icon-btn" data-i18n-attr="title:themeToggle, aria-label:themeToggle">
+        <i data-icon="sun-moon"></i>
+      </button>
+      <button type="button" id="refresh" class="icon-btn" data-i18n-attr="title:refresh, aria-label:refresh">
+        <i data-icon="refresh-cw"></i>
+      </button>
     </div>
   </header>
 
   <section class="stats" id="stats" aria-live="polite"></section>
 
   <div class="search-wrap">
-    <input type="search" id="search" placeholder="🔎 Search tabs..." aria-label="Search tabs" autocomplete="off">
+    <i class="search-icon" data-icon="search"></i>
+    <input type="search" id="search" autocomplete="off" data-i18n-attr="placeholder:searchPlaceholder, aria-label:searchTabs">
   </div>
 
   <section class="duplicates" id="duplicates"></section>
 
   <section class="actions">
-    <button type="button" id="clean" class="primary">Clean Duplicates</button>
-    <button type="button" id="close-all-dupes">Close All Duplicate Tabs</button>
-    <button type="button" id="open-dashboard">Open Dashboard</button>
+    <button type="button" id="clean" class="primary">
+      <i data-icon="eraser"></i><span data-i18n="cleanDuplicates">Clean Duplicates</span>
+    </button>
+    <button type="button" id="close-all-dupes">
+      <i data-icon="trash"></i><span data-i18n="closeAllDuplicates">Close All Duplicate Tabs</span>
+    </button>
+    <button type="button" id="open-dashboard">
+      <i data-icon="layout-dashboard"></i><span data-i18n="openDashboard">Open Dashboard</span>
+    </button>
   </section>
 
   <p class="status" id="status" role="status"></p>
