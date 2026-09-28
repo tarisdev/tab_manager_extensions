@@ -1,0 +1,40 @@
+# --- Dependencies (project has none today, keep it out if tooling is added) ---
+node_modules/
+vendor/
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+
+# --- Build / bundler output (MV3 needs plain files, but keep the folder clean) ---
+dist/
+build/
+out/
+*.crx
+*.pem
+*.zip
+*.xpi
+
+# --- Secrets - never commit extension keys or local credentials ---
+*.key
+*.p12
+.env
+.env.*
+!.env.example
+
+# --- Local / machine-specific settings ---
+.vscode/
+.idea/
+*.code-workspace
+settings.local.json
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# --- Temp scratch files ---
+*.tmp
+*.tmp.*
+*.log
+npm-debug.log*
+.cache/
+tmp/
+

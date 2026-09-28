@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Tab Manager</title>
+  <link rel="stylesheet" href="dashboard.css">
+</head>
+<body>
+  <header class="header">
+    <div class="brand">
+      <h1>TAB MANAGER</h1>
+      <button type="button" id="theme-toggle" class="icon-btn" title="Toggle theme" aria-label="Toggle theme">◐</button>
+    </div>
+    <div class="header-actions">
+      <button type="button" id="refresh">Refresh</button>
+      <button type="button" id="collapse-all">Collapse all</button>
+      <button type="button" id="clean" class="primary">Clean Duplicates</button>
+      <button type="button" id="close-all-dupes" class="danger">Close All Duplicate Tabs</button>
+    </div>
+  </header>
+
+  <section class="stats" id="stats" aria-live="polite"></section>
+
+  <section class="toolbar">
+    <input type="search" id="search" placeholder="🔎 Search tabs..." aria-label="Search tabs" autocomplete="off">
+    <div class="filters" id="filters" role="group" aria-label="Filter tabs"></div>
+    <label class="group-mode">
+      Group by
+      <select id="group-mode" aria-label="Group by">
+        <option value="domain">Domain</option>
+        <option value="window">Window</option>
+        <option value="spreadsheet">Google Sheets file</option>
+      </select>
+    </label>
+  </section>
+
+  <section class="bulkbar" id="bulkbar" hidden>
+    <span id="bulk-count">0 selected</span>
+    <button type="button" id="bulk-close" class="danger">Close Selected</button>
+    <select id="bulk-window" aria-label="Move selected to window"></select>
+    <button type="button" id="bulk-move">Move Selected</button>
+    <button type="button" id="bulk-clear">Clear</button>
+  </section>
+
+  <main class="groups" id="groups"></main>
+
+  <p class="status" id="status" role="status"></p>
+
+  <dialog id="settings-dialog">
+    <form method="dialog" class="settings-form">
+      <h2>Settings</h2>
+
+      <label>
+        Duplicate handling
+        <select id="set-rule">
+          <option value="keep-active">Keep Active tab</option>
+          <option value="keep-newest">Keep Newest tab</option>
+          <option value="keep-oldest">Keep Oldest tab</option>
+        </select>
+      </label>
+
+      <label>
+        Theme
+        <select id="set-theme">
+          <option value="system">System</option>
+          <option value="light">Light</option>
+          <option value="dark">Dark</option>
+        </select>
+      </label>
+
+      <label class="checkbox">
+        <input type="checkbox" id="set-warning"> Warn when a Google Sheet is already open
+      </label>
+
+      <label class="checkbox">
+        <input type="checkbox" id="set-autoclose"> Automatically close duplicates
+      </label>
+      <p class="hint">Off by default - the extension only reports duplicates.</p>
+
+      <menu class="dialog-actions">
+        <button type="button" id="settings-reset" class="danger">Reset</button>
+        <button type="submit" id="settings-save" class="primary">Save</button>
+      </menu>
+    </form>
+  </dialog>
+
+  <button type="button" id="open-settings" class="icon-btn" title="Settings" aria-label="Settings">⚙</button>
+
+  <script type="module" src="dashboard.js"></script>
+</body>
+</html>

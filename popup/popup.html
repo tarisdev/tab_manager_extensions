@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Tab Manager</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <header class="header">
+    <h1>TAB MANAGER</h1>
+    <div class="header-actions">
+      <button type="button" id="theme-toggle" class="icon-btn" title="Toggle theme" aria-label="Toggle theme">◐</button>
+      <button type="button" id="refresh" class="icon-btn" title="Refresh" aria-label="Refresh">⟳</button>
+    </div>
+  </header>
+
+  <section class="stats" id="stats" aria-live="polite"></section>
+
+  <div class="search-wrap">
+    <input type="search" id="search" placeholder="🔎 Search tabs..." aria-label="Search tabs" autocomplete="off">
+  </div>
+
+  <section class="duplicates" id="duplicates"></section>
+
+  <section class="actions">
+    <button type="button" id="clean" class="primary">Clean Duplicates</button>
+    <button type="button" id="close-all-dupes">Close All Duplicate Tabs</button>
+    <button type="button" id="open-dashboard">Open Dashboard</button>
+  </section>
+
+  <p class="status" id="status" role="status"></p>
+
+  <script type="module" src="popup.js"></script>
+</body>
+</html>

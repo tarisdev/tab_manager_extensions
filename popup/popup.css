@@ -1,0 +1,168 @@
+:root {
+  color-scheme: light dark;
+  --bg: #ffffff;
+  --bg-alt: #f5f6f8;
+  --fg: #202124;
+  --muted: #5f6368;
+  --border: #dadce0;
+  --accent: #1a73e8;
+  --danger: #c5221f;
+  --danger-bg: #fce8e6;
+  --ok: #188038;
+  --radius: 8px;
+}
+
+:root[data-theme="dark"] {
+  --bg: #202124;
+  --bg-alt: #292a2d;
+  --fg: #e8eaed;
+  --muted: #9aa0a6;
+  --border: #3c4043;
+  --accent: #8ab4f8;
+  --danger: #f28b82;
+  --danger-bg: #3b2323;
+  --ok: #81c995;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  width: 420px;
+  max-height: 600px;
+  overflow-y: auto;
+  font: 13px/1.45 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  background: var(--bg);
+  color: var(--fg);
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--border);
+  position: sticky;
+  top: 0;
+  background: var(--bg);
+}
+
+h1 { margin: 0; font-size: 13px; letter-spacing: 0.08em; }
+.header-actions { display: flex; gap: 4px; }
+
+button {
+  font: inherit;
+  color: var(--fg);
+  background: var(--bg-alt);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 6px 10px;
+  cursor: pointer;
+}
+button:hover { border-color: var(--accent); }
+button:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+button.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+button.danger { background: var(--danger-bg); border-color: var(--danger); color: var(--danger); }
+.icon-btn { padding: 4px 8px; line-height: 1; }
+
+.stats {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 6px;
+  padding: 10px 12px;
+}
+.stat {
+  background: var(--bg-alt);
+  border-radius: var(--radius);
+  padding: 8px 6px;
+  text-align: center;
+}
+.stat-value { font-size: 18px; font-weight: 600; }
+.stat-label { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.04em; }
+.stat.dup .stat-value { color: var(--danger); }
+.stat.sheets .stat-value { color: var(--ok); }
+
+.search-wrap { padding: 0 12px 10px; }
+input[type="search"] {
+  width: 100%;
+  font: inherit;
+  padding: 7px 10px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--bg-alt);
+  color: var(--fg);
+}
+
+section h2 {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--muted);
+  margin: 0;
+  padding: 8px 12px 4px;
+}
+
+.duplicates { display: flex; flex-direction: column; }
+
+.dup-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 12px;
+  border-top: 1px solid var(--border);
+}
+.dup-group:hover { background: var(--bg-alt); }
+.dup-title { flex: 1; min-width: 0; }
+.dup-title strong { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.dup-meta { color: var(--muted); font-size: 11px; }
+.badge {
+  background: var(--danger-bg);
+  color: var(--danger);
+  border-radius: 999px;
+  padding: 1px 7px;
+  font-size: 11px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.result {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  border-top: 1px solid var(--border);
+  cursor: pointer;
+  background: none;
+  border-left: 0;
+  border-right: 0;
+  border-bottom: 0;
+  border-radius: 0;
+  text-align: left;
+  width: 100%;
+}
+.result:hover { background: var(--bg-alt); }
+.result .meta { flex: 1; min-width: 0; }
+.result .meta span { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.result .domain { color: var(--muted); font-size: 11px; }
+img.favicon { width: 16px; height: 16px; border-radius: 3px; flex: none; }
+
+.empty { color: var(--muted); padding: 10px 12px; border-top: 1px solid var(--border); }
+
+.actions { display: flex; flex-direction: column; gap: 6px; padding: 10px 12px; }
+
+.status { margin: 0; padding: 0 12px 10px; color: var(--ok); min-height: 18px; font-size: 12px; }
+.status.error { color: var(--danger); }
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #202124;
+    --bg-alt: #292a2d;
+    --fg: #e8eaed;
+    --muted: #9aa0a6;
+    --border: #3c4043;
+    --accent: #8ab4f8;
+    --danger: #f28b82;
+    --danger-bg: #3b2323;
+    --ok: #81c995;
+  }
+}
