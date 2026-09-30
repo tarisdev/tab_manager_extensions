@@ -4,6 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Tab Manager</title>
+  <link rel="stylesheet" href="../ui/base.css">
   <link rel="stylesheet" href="dashboard.css">
 </head>
 <body>
@@ -31,7 +32,7 @@
   <section class="stats" id="stats" aria-live="polite"></section>
 
   <section class="toolbar">
-    <div class="search-box">
+    <div class="search-field">
       <i class="search-icon" data-icon="search"></i>
       <input type="search" id="search" autocomplete="off" data-i18n-attr="placeholder:searchPlaceholder, aria-label:searchTabs">
     </div>
@@ -49,7 +50,6 @@
   <section class="bulkbar" id="bulkbar" hidden>
     <span id="bulk-count"></span>
     <button type="button" id="bulk-close" class="danger"><i data-icon="trash"></i><span data-i18n="bulk.close">Close Selected</span></button>
-    <select id="bulk-window" data-i18n-attr="aria-label:moveToWindow"></select>
     <button type="button" id="bulk-move"><i data-icon="move-right"></i><span data-i18n="bulk.move">Move Selected</span></button>
     <button type="button" id="bulk-clear"><i data-icon="x"></i><span data-i18n="bulk.clear">Clear</span></button>
   </section>
@@ -91,6 +91,11 @@
       </label>
 
       <label class="checkbox">
+        <input type="checkbox" id="set-ignore-tab-id">
+        <span data-i18n="settings.ignoreTabId">Ignore the sheet / page / slide a Google tab is on</span>
+      </label>
+
+      <label class="checkbox">
         <input type="checkbox" id="set-warning">
         <span data-i18n="settings.warning">Warn when a Google Sheet is already open</span>
       </label>
@@ -106,6 +111,16 @@
         <button type="submit" id="settings-save" class="primary" data-i18n="settings.save">Save</button>
       </menu>
     </form>
+  </dialog>
+
+  <dialog id="move-dialog">
+    <button type="button" class="dialog-close" data-close="move-dialog" data-i18n-attr="title:action.close, aria-label:action.close"><i data-icon="x"></i></button>
+    <h2 data-i18n="moveToWindow">Move to window</h2>
+    <div class="picker" id="move-list"></div>
+    <menu class="dialog-actions">
+      <button type="button" id="move-cancel" data-close="move-dialog" data-i18n="action.cancel">Cancel</button>
+      <button type="button" id="move-confirm" class="primary" data-i18n="action.confirm">Confirm</button>
+    </menu>
   </dialog>
 
   <dialog id="help-dialog">

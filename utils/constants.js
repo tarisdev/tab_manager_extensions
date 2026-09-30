@@ -43,7 +43,9 @@ export const DEFAULT_SETTINGS = {
   warningEnabled: true,
   theme: 'system',
   locale: 'auto',
-  autoCloseDuplicates: false
+  autoCloseDuplicates: false,
+  // One flag for Sheets/Docs/Slides: compare the file, not the sheet/page/slide.
+  ignoreGoogleTabId: false
 };
 
 /**

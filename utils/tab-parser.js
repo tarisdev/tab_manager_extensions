@@ -12,6 +12,9 @@ const NOISE_PARAM = /^(utm_|fbclid$|gbraid$|wbraid$|mc_|ref$|referrer$|usp$|s$|v
 
 const SHEETS_ID_PATH = /^\/spreadsheets\/d\/([A-Za-z0-9_-]+)/;
 
+/** Every Docs-hosted file, whatever its sub-page: Sheets, Docs and Slides. */
+const GOOGLE_FILE_PATH = /^\/(?:spreadsheets|document|presentation)\/d\/([A-Za-z0-9_-]+)/;
+
 /** Google defaults to the first sheet (gid=0) when the URL carries no gid. */
 export const DEFAULT_GID = '0';
 
@@ -40,6 +43,18 @@ export function isGoogleSheetsUrl(url) {
 export function extractSpreadsheetId(url) {
   try {
     const match = SHEETS_ID_PATH.exec(new URL(url).pathname);
+    return match ? match[1] : null;
+  } catch {
+    return null;
+  }
+}
+
+/** File id of a Sheets/Docs/Slides URL, or null for anything else. */
+export function extractGoogleFileId(url) {
+  try {
+    const u = new URL(url);
+    if (u.hostname !== 'docs.google.com') return null;
+    const match = GOOGLE_FILE_PATH.exec(u.pathname);
     return match ? match[1] : null;
   } catch {
     return null;
@@ -89,9 +104,16 @@ export function normalizeUrl(url) {
  * Identity of the *content* a tab shows.
  * Google Sheets: spreadsheetId + gid, so different tabs of one file are NOT
  * duplicates. Everything else: the normalized URL.
+ * With `ignoreGoogleTabId` on, every Docs-hosted file (Sheets, Docs, Slides)
+ * is compared by file id alone: the sheet, page or slide a tab is parked on
+ * stops separating them.
  */
-export function getDuplicateKey(url) {
+export function getDuplicateKey(url, settings = {}) {
   if (!isEligibleUrl(url)) return null;
+  if (settings.ignoreGoogleTabId) {
+    const fileId = extractGoogleFileId(url);
+    if (fileId) return `gfile::${fileId}`;
+  }
   const sheets = getGoogleSheetsInfo(url);
   if (sheets) return `sheets::${sheets.spreadsheetId}::${sheets.gid}`;
   return `url::${normalizeUrl(url)}`;
@@ -108,7 +130,7 @@ export function getCategory(url) {
 }
 
 /** Attach everything the UI needs to a raw `chrome.tabs.Tab`. */
-export function parseTab(tab) {
+export function parseTab(tab, settings = {}) {
   const url = tab.url || '';
   const sheets = getGoogleSheetsInfo(url);
   return {
@@ -127,7 +149,7 @@ export function parseTab(tab) {
     isGoogleSheets: Boolean(sheets),
     spreadsheetId: sheets ? sheets.spreadsheetId : null,
     gid: sheets ? sheets.gid : null,
-    duplicateKey: getDuplicateKey(url),
+    duplicateKey: getDuplicateKey(url, settings),
     // Lower-cased haystack for search: title + url (which contains domain,
     // spreadsheet id and gid).
     searchable: `${tab.title || ''} ${url}`.toLowerCase()

@@ -1,0 +1,219 @@
+/**
+ * The extension's design system. Tokens, reset and base components live here
+ * exactly once; popup.css and dashboard.css only add page layout on top.
+ *
+ * Every value a component needs comes from a token below - no magic numbers in
+ * the page stylesheets. Loaded by both extension pages, never injected into a
+ * website, so it needs no scoping.
+ */
+
+:root {
+  color-scheme: light dark;
+
+  /* Palette. The Google accents are the brand; only roles are named. */
+  --bg: #ffffff;
+  --bg-alt: #f5f6f8;
+  --fg: #202124;
+  --muted: #5f6368;
+  --border: #dadce0;
+  --accent: #1a73e8;
+  --on-accent: #ffffff;
+  --danger: #c5221f;
+  --danger-bg: #fce8e6;
+  --ok: #188038;
+
+  /* Spacing: 4px scale. */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+
+  --radius-sm: 6px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-pill: 999px;
+
+  /* Type scale: five sizes and a fixed weight pair. */
+  --text-xs: 11px;
+  --text-sm: 12px;
+  --text-md: 13px;
+  --text-lg: 15px;
+  --text-xl: 18px;
+  --text-2xl: 24px;
+
+  /* One height for every control, so mixed rows still line up. */
+  --control-h: 28px;
+  --control-pad: 0 var(--space-3);
+  --speed: 120ms;
+
+  --shadow-menu: 0 6px 18px rgba(0, 0, 0, 0.18);
+  --z-bar: 4;
+  --z-header: 5;
+  --z-menu: 6;
+  --z-toast: 9;
+}
+
+:root[data-theme="dark"] {
+  --bg: #202124;
+  --bg-alt: #292a2d;
+  --fg: #e8eaed;
+  --muted: #9aa0a6;
+  --border: #3c4043;
+  --accent: #8ab4f8;
+  --on-accent: #202124;
+  --danger: #f28b82;
+  --danger-bg: #3b2323;
+  --ok: #81c995;
+}
+
+/* System theme only applies while the user has not forced light. */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #202124;
+    --bg-alt: #292a2d;
+    --fg: #e8eaed;
+    --muted: #9aa0a6;
+    --border: #3c4043;
+    --accent: #8ab4f8;
+    --on-accent: #202124;
+    --danger: #f28b82;
+    --danger-bg: #3b2323;
+    --ok: #81c995;
+  }
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--fg);
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+}
+
+h1, h2, p, ul { margin: 0; }
+menu { margin: 0; padding: 0; list-style: none; }
+svg { flex: none; }
+
+/* ---------- Controls ---------- */
+
+button, select, input {
+  font: inherit;
+  color: var(--fg);
+  background: var(--bg-alt);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+}
+
+button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  height: var(--control-h);
+  padding: var(--control-pad);
+  white-space: nowrap;
+  cursor: pointer;
+  transition: background var(--speed) ease, border-color var(--speed) ease, color var(--speed) ease;
+}
+button:hover:not(:disabled) { border-color: var(--accent); }
+button:active:not(:disabled) { background: color-mix(in srgb, var(--fg) 7%, var(--bg-alt)); }
+button:disabled { opacity: 0.5; cursor: not-allowed; }
+button.primary { background: var(--accent); border-color: var(--accent); color: var(--on-accent); }
+button.danger { background: var(--danger-bg); border-color: var(--danger); color: var(--danger); }
+/* Square, for an icon with no label. The title/aria-label carries the meaning. */
+.icon-btn { width: var(--control-h); padding: 0; }
+
+input, select { height: var(--control-h); padding: var(--control-pad); }
+input[type="checkbox"] { width: 16px; height: 16px; accent-color: var(--accent); cursor: pointer; }
+input[type="search"] { width: 100%; }
+
+:is(button, select, input, summary):focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+
+.chip {
+  height: var(--control-h);
+  padding: 0 var(--space-3);
+  border-radius: var(--radius-pill);
+  background: var(--bg-alt);
+  border: 1px solid var(--border);
+  cursor: pointer;
+}
+.chip[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: var(--on-accent); }
+
+/* Search field, shared by both surfaces: the icon is pinned, the text clears it. */
+.search-field { position: relative; display: flex; }
+.search-field .search-icon {
+  position: absolute;
+  left: var(--space-2);
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--muted);
+  pointer-events: none;
+}
+.search-field input[type="search"] { padding-left: calc(var(--space-6) + var(--space-2)); }
+
+/* ---------- Feedback ---------- */
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  height: 20px;
+  padding: 0 var(--space-2);
+  border-radius: var(--radius-pill);
+  background: var(--danger-bg);
+  color: var(--danger);
+  font-size: var(--text-xs);
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.empty {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  color: var(--muted);
+}
+.hint { margin: 0; color: var(--muted); font-size: var(--text-sm); }
+
+/* ---------- Dialogs (settings, help and the shared confirm from utils/confirm.js) ---------- */
+
+dialog {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  background: var(--bg);
+  color: var(--fg);
+  padding: var(--space-6);
+  /* Width, not min-width: min-width would beat the 90vw cap and overflow. */
+  width: min(460px, calc(100vw - var(--space-6)));
+  box-shadow: var(--shadow-menu);
+}
+dialog[open] { display: flex; flex-direction: column; }
+dialog::backdrop { background: rgba(0, 0, 0, 0.45); }
+dialog h2 { margin: 0; font-size: var(--text-lg); }
+/* In flow, not absolute: the X gets its own line so no content runs under it. */
+.dialog-close {
+  align-self: flex-end;
+  margin: calc(var(--space-2) * -1) calc(var(--space-2) * -1) 0 0;
+  width: var(--control-h);
+  padding: 0;
+  background: none;
+  border: 0;
+  color: var(--muted);
+}
+.dialog-close:hover { color: var(--danger); }
+.dialog-actions { display: flex; justify-content: flex-end; gap: var(--space-2); margin-top: var(--space-4); }
+/* The cleanup plan arrives as one newline-joined string, so keep the breaks. */
+.confirm-body { margin: 0; white-space: pre-wrap; }
+
+@media (prefers-reduced-motion: reduce) {
+  /* Standard blanket reset: !important is the only way to beat the rules above. */
+  *, *::before, *::after {
+    transition-duration: 0s !important;
+    animation-duration: 0s !important;
+  }
+}

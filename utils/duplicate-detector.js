@@ -28,7 +28,9 @@ export function findDuplicateGroups(tabs) {
       category: first.category,
       isGoogleSheets: first.isGoogleSheets,
       spreadsheetId: first.spreadsheetId,
-      gid: first.gid
+      // With ignoreSheetsGid a group can span several sheets, so there is no
+      // single gid to name.
+      gid: new Set(group.map((tab) => tab.gid)).size === 1 ? first.gid : null
     });
   }
   return groups;

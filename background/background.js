@@ -20,7 +20,7 @@ let refreshInFlight = null;
 let rerunAfterRefresh = false;
 
 /** Read every open tab in every window and derive the duplicate report. */
-async function buildState() {
+async function buildState(settings) {
   const [tabs, windows] = await Promise.all([
     chrome.tabs.query({}),
     chrome.windows.getAll({})
@@ -32,7 +32,7 @@ async function buildState() {
   });
 
   const parsed = tabs.map((tab) => {
-    const item = parseTab(tab);
+    const item = parseTab(tab, settings);
     item.windowLabel = windowLabels.get(tab.windowId) || t('windowLabel', { n: tab.windowId });
     return item;
   });
@@ -85,7 +85,7 @@ async function refresh() {
       // through t(), so the whole payload has to speak a single language.
       const settings = await getSettings();
       resolveLocale(settings.locale);
-      cachedState = await buildState();
+      cachedState = await buildState(settings);
       await updateBadge(cachedState, settings);
       await broadcastState();
     } catch (error) {

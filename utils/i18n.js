@@ -50,7 +50,6 @@ const en = {
   'bulk.move': 'Move Selected',
   'bulk.clear': 'Clear',
   moveToWindow: 'Move to window',
-  chooseWindow: 'Choose window…',
 
   tabCount: '{count} tabs',
   dupCount: '×{count} duplicate',
@@ -114,6 +113,7 @@ const en = {
   'settings.themeLight': 'Light',
   'settings.themeDark': 'Dark',
   'settings.warning': 'Warn when a Google Sheet is already open',
+  'settings.ignoreTabId': 'Detect duplicates per Google file, ignoring sheet / page / slide',
   'settings.autoclose': 'Automatically close duplicates',
   'settings.hint': 'Off by default - the extension only reports duplicates.',
   'settings.reset': 'Reset',
@@ -176,7 +176,6 @@ const vi = {
   'bulk.move': 'Chuyển đã chọn',
   'bulk.clear': 'Bỏ chọn',
   moveToWindow: 'Chuyển sang cửa sổ',
-  chooseWindow: 'Chọn cửa sổ…',
 
   tabCount: '{count} tab',
   dupCount: '×{count} trùng',
@@ -240,6 +239,7 @@ const vi = {
   'settings.themeLight': 'Sáng',
   'settings.themeDark': 'Tối',
   'settings.warning': 'Cảnh báo khi Google Sheet đã được mở',
+  'settings.ignoreTabId': 'Phát hiện trùng theo tệp Google, không tính trang tính / trang / slide',
   'settings.autoclose': 'Tự động đóng tab trùng',
   'settings.hint': 'Mặc định tắt - tiện ích chỉ thông báo, không tự hành động.',
   'settings.reset': 'Đặt lại',

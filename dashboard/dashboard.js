@@ -114,6 +114,31 @@ function windowOptions(currentWindowId) {
     });
 }
 
+let pendingMove = null;
+
+/** One dialog lists every other window: pick one, then confirm. */
+function openWindowPicker(tabIds, excludeWindowId = null) {
+  const targets = windowOptions(excludeWindowId);
+  if (targets.length === 0) return;
+  const list = el('move-list');
+  pendingMove = null;
+  el('move-confirm').disabled = true;
+  list.replaceChildren(...targets.map(({ id, label }) => {
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.className = 'picker-item';
+    button.textContent = label;
+    button.setAttribute('aria-pressed', 'false');
+    button.addEventListener('click', () => {
+      pendingMove = { tabIds, windowId: id };
+      el('move-confirm').disabled = false;
+      for (const item of list.children) item.setAttribute('aria-pressed', String(item === button));
+    });
+    return button;
+  }));
+  el('move-dialog').showModal();
+}
+
 function menuButton(label, onClick) {
   const button = document.createElement('button');
   button.type = 'button';
@@ -144,18 +169,10 @@ function buildMenu(tab, duplicateIds) {
 
   const targets = windowOptions(tab.windowId);
   if (targets.length > 0) {
-    const label = document.createElement('div');
-    label.className = 'menu-label';
-    label.textContent = t('moveToWindow');
-    const select = document.createElement('select');
-    select.setAttribute('aria-label', t('moveToWindow'));
-    select.append(new Option(t('chooseWindow'), ''));
-    for (const target of targets) select.append(new Option(target.label, String(target.id)));
-    select.addEventListener('change', () => {
-      if (select.value) send(MSG.MOVE_TABS, { tabIds: [tab.id], windowId: Number(select.value) });
+    panel.append(menuButton(t('moveToWindow'), () => {
       details.open = false;
-    });
-    panel.append(label, select);
+      openWindowPicker([tab.id], tab.windowId);
+    }));
   }
 
   panel.append(
@@ -170,6 +187,11 @@ function buildMenu(tab, duplicateIds) {
   );
 
   details.append(summary, panel);
+  // Rows near the bottom of the window would push the panel off-screen, so it
+  // opens upward instead. Purely presentational: no message is affected.
+  details.addEventListener('toggle', () => {
+    if (details.open) panel.classList.toggle('up', panel.getBoundingClientRect().bottom > window.innerHeight);
+  });
   return details;
 }
 
@@ -204,7 +226,7 @@ function buildTabRow(tab, duplicateIds) {
   const sub = document.createElement('div');
   sub.className = 'tab-sub';
   const parts = [tab.domain || tab.url, `${tab.windowLabel} • ${t('tabId', { id: tab.id })}`];
-  if (tab.isGoogleSheets) parts.push(t('sheetLabel', { gid: tab.gid }));
+  if (tab.isGoogleSheets && tab.gid !== null) parts.push(t('sheetLabel', { gid: tab.gid }));
   if (tab.active) parts.unshift(t('activeTag'));
   sub.textContent = parts.join(' • ');
   info.append(title, sub);
@@ -304,12 +326,8 @@ function renderBulkbar() {
   const bar = el('bulkbar');
   bar.hidden = ui.selected.size === 0;
   el('bulk-count').textContent = t('bulk.selected', { count: ui.selected.size });
-
-  const select = el('bulk-window');
-  const current = select.value;
-  select.replaceChildren(new Option(t('moveToWindow'), ''));
-  for (const { id, label } of windowOptions(null)) select.append(new Option(label, String(id)));
-  select.value = current;
+  // Nothing to move to when this is the only open window.
+  el('bulk-move').disabled = windowOptions(null).length === 0;
 }
 
 function render() {
@@ -367,19 +385,11 @@ async function closeSelected() {
   setStatus(result.ok && result.closed ? t('status.tabsClosed', { count: result.closed }) : t('status.nothingClosed'), !result.ok);
 }
 
-async function moveSelected() {
-  const windowId = Number(el('bulk-window').value);
-  const ids = [...ui.selected];
-  if (!windowId || ids.length === 0) return;
-  const result = await send(MSG.MOVE_TABS, { tabIds: ids, windowId });
-  if (result.ok) setStatus(t('status.moved', { count: ids.length }));
-  else setStatus(result.error || t('status.moveFailed'), true);
-}
-
 function openSettings() {
   el('set-rule').value = ui.settings.duplicateRule || KEEP_RULES.ACTIVE;
   el('set-theme').value = ui.settings.theme || 'system';
   el('set-locale').value = ui.settings.locale || 'auto';
+  el('set-ignore-tab-id').checked = ui.settings.ignoreGoogleTabId === true;
   el('set-warning').checked = ui.settings.warningEnabled !== false;
   el('set-autoclose').checked = ui.settings.autoCloseDuplicates === true;
   el('settings-dialog').showModal();
@@ -401,7 +411,7 @@ el('group-mode').addEventListener('change', async (event) => {
 el('refresh').addEventListener('click', load);
 el('clean').addEventListener('click', cleanDuplicates);
 el('bulk-close').addEventListener('click', closeSelected);
-el('bulk-move').addEventListener('click', moveSelected);
+el('bulk-move').addEventListener('click', () => openWindowPicker([...ui.selected]));
 el('bulk-clear').addEventListener('click', () => {
   ui.selected.clear();
   render();
@@ -444,6 +454,27 @@ el('theme-toggle').addEventListener('click', async () => {
 el('open-settings').addEventListener('click', openSettings);
 el('open-help').addEventListener('click', () => el('help-dialog').showModal());
 el('help-close').addEventListener('click', () => el('help-dialog').close());
+el('move-confirm').addEventListener('click', async () => {
+  if (!pendingMove) return;
+  const { tabIds, windowId } = pendingMove;
+  pendingMove = null;
+  el('move-dialog').close();
+  const result = await send(MSG.MOVE_TABS, { tabIds, windowId });
+  setStatus(result.ok ? t('status.moved', { count: tabIds.length }) : result.error || t('status.moveFailed'),
+    !result.ok);
+});
+// <details> only closes on a second click of its own summary, so an open ⋮ menu
+// would stay on screen while the user works elsewhere on the page.
+document.addEventListener('click', (event) => {
+  for (const details of document.querySelectorAll('details.menu[open]')) {
+    if (!details.contains(event.target)) details.open = false;
+  }
+});
+document.addEventListener('keydown', (event) => {
+  if (event.key !== 'Escape') return;
+  for (const details of document.querySelectorAll('details.menu[open]')) details.open = false;
+});
+
 // The X in each dialog's top-right corner closes it, same as the footer button.
 for (const btn of document.querySelectorAll('[data-close]')) {
   btn.addEventListener('click', () => el(btn.dataset.close).close());
@@ -455,6 +486,7 @@ el('settings-save').addEventListener('click', async () => {
       duplicateRule: el('set-rule').value,
       theme: el('set-theme').value,
       locale: el('set-locale').value,
+      ignoreGoogleTabId: el('set-ignore-tab-id').checked,
       warningEnabled: el('set-warning').checked,
       autoCloseDuplicates: el('set-autoclose').checked
     }

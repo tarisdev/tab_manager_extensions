@@ -21,6 +21,15 @@ const ui = {
   query: ''
 };
 
+/** Empty-state row: an icon plus a message, so the list never renders blank. */
+function emptyState(message, iconName) {
+  const node = document.createElement('p');
+  node.className = 'empty';
+  withIcon(node, iconName);
+  node.append(document.createTextNode(message));
+  return node;
+}
+
 function setStatus(message, isError = false) {
   const node = el('status');
   node.textContent = message;
@@ -74,7 +83,7 @@ function renderSearchResults() {
 
   const matches = ui.state.tabs.filter((tab) => tab.searchable.includes(query)).slice(0, 25);
   if (matches.length === 0) {
-    container.replaceChildren(el('p', 'empty', t('status.noResults')));
+    container.replaceChildren(emptyState(t('status.noResults'), 'search'));
     return;
   }
   container.replaceChildren(...matches.map((tab) => {
@@ -106,10 +115,7 @@ function renderDuplicates() {
   const container = el('duplicates');
   const groups = ui.state.duplicateGroups;
   if (groups.length === 0) {
-    const empty = el('p', 'empty');
-    withIcon(empty, 'circle-check');
-    empty.append(document.createTextNode(t('status.noDupes')));
-    container.replaceChildren(empty);
+    container.replaceChildren(emptyState(t('status.noDupes'), 'circle-check'));
     return;
   }
 
@@ -125,7 +131,7 @@ function renderDuplicates() {
     title.textContent = group.title || group.domain;
     const meta = document.createElement('div');
     meta.className = 'dup-meta';
-    meta.textContent = group.isGoogleSheets
+    meta.textContent = group.isGoogleSheets && group.gid !== null
       ? `${group.domain} · ${t('sheetLabel', { gid: group.gid })}`
       : group.domain;
     info.append(title, meta);
