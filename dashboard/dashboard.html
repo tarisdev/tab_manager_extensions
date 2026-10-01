@@ -31,38 +31,40 @@
 
   <section class="stats" id="stats" aria-live="polite"></section>
 
-  <section class="toolbar">
-    <div class="search-field">
-      <i class="search-icon" data-icon="search"></i>
-      <input type="search" id="search" autocomplete="off" data-i18n-attr="placeholder:searchPlaceholder, aria-label:searchTabs">
-    </div>
-    <div class="filters" id="filters" role="group" data-i18n-attr="aria-label:filter.label"></div>
-    <label class="group-mode">
-      <span data-i18n="groupBy">Group by</span>
-      <select id="group-mode" data-i18n-attr="aria-label:groupBy">
-        <option value="domain" data-i18n="groupBy.domain">Domain</option>
-        <option value="window" data-i18n="groupBy.window">Window</option>
-        <option value="spreadsheet" data-i18n="groupBy.spreadsheet">Google Sheets file</option>
-      </select>
-    </label>
-    <label class="group-mode">
-      <span data-i18n="sortBy">Sort by</span>
-      <select id="sort-mode" data-i18n-attr="aria-label:sortBy">
-        <option value="group" data-i18n="sort.group">Group</option>
-        <option value="title" data-i18n="sort.title">Title (A-Z)</option>
-        <option value="domain" data-i18n="sort.domain">Domain</option>
-        <option value="recent" data-i18n="sort.recent">Newest first</option>
-      </select>
-    </label>
-    <button type="button" id="apply-sort"><i data-icon="arrow-down-up"></i><span data-i18n="action.sortTabs">Sort tabs</span></button>
-  </section>
+  <div class="sticky-bar">
+    <section class="toolbar">
+      <div class="search-field">
+        <i class="search-icon" data-icon="search"></i>
+        <input type="search" id="search" autocomplete="off" data-i18n-attr="placeholder:searchPlaceholder, aria-label:searchTabs">
+      </div>
+      <div class="filters" id="filters" role="group" data-i18n-attr="aria-label:filter.label"></div>
+      <label class="group-mode">
+        <span data-i18n="groupBy">Group by</span>
+        <select id="group-mode" data-i18n-attr="aria-label:groupBy">
+          <option value="domain" data-i18n="groupBy.domain">Domain</option>
+          <option value="window" data-i18n="groupBy.window">Window</option>
+          <option value="spreadsheet" data-i18n="groupBy.spreadsheet">Google Sheets file</option>
+        </select>
+      </label>
+      <label class="group-mode">
+        <span data-i18n="sortBy">Sort by</span>
+        <select id="sort-mode" data-i18n-attr="aria-label:sortBy">
+          <option value="group" data-i18n="sort.group">Group</option>
+          <option value="title" data-i18n="sort.title">Title (A-Z)</option>
+          <option value="domain" data-i18n="sort.domain">Domain</option>
+          <option value="recent" data-i18n="sort.recent">Newest first</option>
+        </select>
+      </label>
+      <button type="button" id="apply-sort"><i data-icon="arrow-down-up"></i><span data-i18n="action.sortTabs">Sort tabs</span></button>
+    </section>
 
-  <section class="bulkbar" id="bulkbar" hidden>
-    <span id="bulk-count"></span>
-    <button type="button" id="bulk-close" class="danger"><i data-icon="trash"></i><span data-i18n="bulk.close">Close Selected</span></button>
-    <button type="button" id="bulk-move"><i data-icon="move-right"></i><span data-i18n="bulk.move">Move Selected</span></button>
-    <button type="button" id="bulk-clear"><i data-icon="x"></i><span data-i18n="bulk.clear">Clear</span></button>
-  </section>
+    <section class="bulkbar" id="bulkbar" hidden>
+      <span id="bulk-count"></span>
+      <button type="button" id="bulk-close" class="danger"><i data-icon="trash"></i><span data-i18n="bulk.close">Close Selected</span></button>
+      <button type="button" id="bulk-move"><i data-icon="move-right"></i><span data-i18n="bulk.move">Move Selected</span></button>
+      <button type="button" id="bulk-clear"><i data-icon="x"></i><span data-i18n="bulk.clear">Clear</span></button>
+    </section>
+  </div>
 
   <main class="groups" id="groups"></main>
 
