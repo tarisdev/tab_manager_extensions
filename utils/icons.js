@@ -43,6 +43,12 @@ const ICONS = {
     ['path', { d: 'm7 20 5-5 5 5' }],
     ['path', { d: 'm7 4 5 5 5-5' }]
   ],
+  'arrow-down-up': [
+    ['path', { d: 'm3 16 4 4 4-4' }],
+    ['path', { d: 'M7 20V4' }],
+    ['path', { d: 'm21 8-4-4-4 4' }],
+    ['path', { d: 'M17 4v16' }]
+  ],
   'ellipsis-vertical': [
     ['circle', { cx: 12, cy: 12, r: 1 }],
     ['circle', { cx: 12, cy: 5, r: 1 }],

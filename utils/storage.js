@@ -1,10 +1,11 @@
-import { DEFAULT_SETTINGS, KEEP_RULES, GROUP_MODES, LOCALES } from './constants.js';
+import { DEFAULT_SETTINGS, KEEP_RULES, GROUP_MODES, SORT_MODES, LOCALES } from './constants.js';
 
 const STORAGE_KEY = 'settings';
 
 const ALLOWED = {
   duplicateRule: Object.values(KEEP_RULES),
   groupBy: Object.values(GROUP_MODES),
+  sortBy: Object.values(SORT_MODES),
   theme: ['system', 'dark', 'light'],
   locale: LOCALES
 };

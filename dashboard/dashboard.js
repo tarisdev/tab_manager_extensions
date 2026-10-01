@@ -1,5 +1,5 @@
-import { MSG, KEEP_RULES, GROUP_MODES, FILTER } from '../utils/constants.js';
-import { groupTabs } from '../utils/tab-grouper.js';
+import { MSG, KEEP_RULES, GROUP_MODES, SORT_MODES, FILTER } from '../utils/constants.js';
+import { groupTabs, sortGroupTabs } from '../utils/tab-grouper.js';
 import { categoryLabel, t, applyTranslations, resolveLocale } from '../utils/i18n.js';
 import { faviconUrl } from '../utils/favicon.js';
 import { askConfirm } from '../utils/confirm.js';
@@ -116,26 +116,12 @@ function windowOptions(currentWindowId) {
 
 let pendingMove = null;
 
-/** One dialog lists every other window: pick one, then confirm. */
+/** One dialog lists every other window in a <select>: pick one, then confirm. */
 function openWindowPicker(tabIds, excludeWindowId = null) {
   const targets = windowOptions(excludeWindowId);
   if (targets.length === 0) return;
-  const list = el('move-list');
-  pendingMove = null;
-  el('move-confirm').disabled = true;
-  list.replaceChildren(...targets.map(({ id, label }) => {
-    const button = document.createElement('button');
-    button.type = 'button';
-    button.className = 'picker-item';
-    button.textContent = label;
-    button.setAttribute('aria-pressed', 'false');
-    button.addEventListener('click', () => {
-      pendingMove = { tabIds, windowId: id };
-      el('move-confirm').disabled = false;
-      for (const item of list.children) item.setAttribute('aria-pressed', String(item === button));
-    });
-    return button;
-  }));
+  pendingMove = { tabIds };
+  el('move-window').replaceChildren(...targets.map(({ id, label }) => new Option(label, String(id))));
   el('move-dialog').showModal();
 }
 
@@ -319,7 +305,12 @@ function renderGroups() {
     container.replaceChildren(empty);
     return;
   }
-  container.replaceChildren(...groups.map((group) => buildGroup(group, duplicateIds)));
+  // Sorted here, with the very same helper the service worker applies, so the
+  // preview is the order the tab strip will end up in.
+  container.replaceChildren(...groups.map((group) => buildGroup(
+    { ...group, tabs: sortGroupTabs(group.tabs, ui.settings.sortBy) },
+    duplicateIds
+  )));
 }
 
 function renderBulkbar() {
@@ -333,6 +324,7 @@ function renderBulkbar() {
 function render() {
   resolveLocale(ui.settings?.locale);
   applyTheme();
+  el('sort-mode').value = ui.settings.sortBy || SORT_MODES.GROUP;
   renderStats();
   renderFilters();
   renderGroups();
@@ -408,6 +400,27 @@ el('group-mode').addEventListener('change', async (event) => {
   }
 });
 
+el('sort-mode').addEventListener('change', async (event) => {
+  // Applied locally before the round trip: the worker broadcasts a state update
+  // *before* it answers, and that render() would otherwise snap the select back
+  // to the previous rule.
+  ui.settings = { ...ui.settings, sortBy: event.target.value };
+  renderGroups();
+  await send(MSG.SET_SETTINGS, { patch: { sortBy: event.target.value } });
+});
+
+// Only sorts the real tab strip on demand: picking a rule must never move tabs
+// by itself.
+el('apply-sort').addEventListener('click', async () => {
+  const button = el('apply-sort');
+  button.disabled = true;
+  const result = await send(MSG.SORT_TABS, { rule: ui.settings.sortBy });
+  button.disabled = false;
+  setStatus(result.ok
+    ? t('status.sorted', { count: result.moved, windows: result.windows })
+    : result.error || t('status.sortFailed'), !result.ok);
+});
+
 el('refresh').addEventListener('click', load);
 el('clean').addEventListener('click', cleanDuplicates);
 el('bulk-close').addEventListener('click', closeSelected);
@@ -456,7 +469,8 @@ el('open-help').addEventListener('click', () => el('help-dialog').showModal());
 el('help-close').addEventListener('click', () => el('help-dialog').close());
 el('move-confirm').addEventListener('click', async () => {
   if (!pendingMove) return;
-  const { tabIds, windowId } = pendingMove;
+  const { tabIds } = pendingMove;
+  const windowId = Number(el('move-window').value);
   pendingMove = null;
   el('move-dialog').close();
   const result = await send(MSG.MOVE_TABS, { tabIds, windowId });

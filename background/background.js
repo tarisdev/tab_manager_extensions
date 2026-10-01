@@ -1,7 +1,8 @@
 import { parseTab } from '../utils/tab-parser.js';
 import { findDuplicateGroups, countDuplicates, duplicateTabIds, planCleanup } from '../utils/duplicate-detector.js';
+import { groupTabs, sortGroupTabs } from '../utils/tab-grouper.js';
 import { getSettings, setSettings, resetSettings } from '../utils/storage.js';
-import { MSG, KEEP_RULES, REFRESH_DEBOUNCE_MS } from '../utils/constants.js';
+import { MSG, KEEP_RULES, SORT_MODES, REFRESH_DEBOUNCE_MS } from '../utils/constants.js';
 import { resolveLocale, t } from '../utils/i18n.js';
 
 /**
@@ -217,6 +218,40 @@ const HANDLERS = {
     }
     await refresh();
     return { ok: true };
+  },
+
+  /**
+   * Reorder the real tab strip. The order is exactly the one on screen: group
+   * order first, then the chosen rule inside each group.
+   */
+  async [MSG.SORT_TABS]({ rule }) {
+    const settings = await getSettings();
+    const useRule = Object.values(SORT_MODES).includes(rule) ? rule : settings.sortBy;
+    const groups = groupTabs(cachedState.tabs, settings.groupBy, new Set(cachedState.duplicateTabIds));
+
+    const perWindow = new Map();
+    for (const group of groups) {
+      for (const tab of sortGroupTabs(group.tabs, useRule)) {
+        if (!perWindow.has(tab.windowId)) perWindow.set(tab.windowId, []);
+        perWindow.get(tab.windowId).push(tab);
+      }
+    }
+
+    let moved = 0;
+    for (const [windowId, tabs] of perWindow) {
+      // Chrome refuses to move a tab across the pinned boundary, so the pinned
+      // block and the rest are each placed inside their own region.
+      const pinned = tabs.filter((tab) => tab.pinned);
+      const loose = tabs.filter((tab) => !tab.pinned);
+      for (const [offset, chunk] of [[0, pinned], [pinned.length, loose]]) {
+        for (let i = 0; i < chunk.length; i += 1) {
+          await chrome.tabs.move(chunk[i].id, { windowId, index: offset + i });
+          moved += 1;
+        }
+      }
+    }
+    await refresh();
+    return { moved, windows: perWindow.size, rule: useRule };
   },
 
   /** Preview (dryRun) or execute the cleanup for every duplicate group. */

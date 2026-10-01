@@ -1,5 +1,5 @@
 import { categoryLabel, t } from './i18n.js';
-import { GROUP_MODES } from './constants.js';
+import { GROUP_MODES, SORT_MODES } from './constants.js';
 
 /** Domain/Google grouping, biggest group first. */
 export function groupByCategory(tabs, duplicateIds = new Set()) {
@@ -79,4 +79,24 @@ export function groupTabs(tabs, mode, duplicateIds = new Set()) {
   if (mode === GROUP_MODES.WINDOW) return groupByWindow(tabs, duplicateIds);
   if (mode === GROUP_MODES.SPREADSHEET) return groupBySpreadsheet(tabs, duplicateIds);
   return groupByCategory(tabs, duplicateIds);
+}
+
+/** Collation for the text sorts: "Sheet 2" before "Sheet 10", case ignored. */
+const byText = (a, b) => a.localeCompare(b, undefined, { numeric: true, sensitivity: 'base' });
+
+const WITHIN_GROUP = {
+  [SORT_MODES.TITLE]: (a, b) => byText(a.title || a.url, b.title || b.url),
+  [SORT_MODES.DOMAIN]: (a, b) => byText(a.domain, b.domain) || byText(a.title || '', b.title || ''),
+  // Tab ids grow with creation time, so the biggest id is the newest tab.
+  [SORT_MODES.RECENT]: (a, b) => b.id - a.id
+};
+
+/**
+ * Order the tabs of one group. The dashboard previews this and the service
+ * worker applies the very same function, so the screen matches the tab strip.
+ * `SORT_MODES.GROUP` and unknown values keep the incoming order (tab strip order).
+ */
+export function sortGroupTabs(tabs, mode) {
+  const compare = WITHIN_GROUP[mode];
+  return compare ? [...tabs].sort(compare) : [...tabs];
 }

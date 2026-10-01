@@ -157,6 +157,47 @@ input[type="search"] { width: 100%; }
 }
 .search-field input[type="search"] { padding-left: calc(var(--space-6) + var(--space-2)); }
 
+/* ---------- Page furniture shared by both surfaces ---------- */
+
+/* Sticky on both pages, so the toolbar below it stays reachable. Only the
+   padding and wrapping differ per page. */
+.header {
+  position: sticky;
+  top: 0;
+  z-index: var(--z-header);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+  background: var(--bg);
+  border-bottom: 1px solid var(--border);
+}
+.header-actions { display: flex; align-items: center; gap: var(--space-2); }
+
+/* Stat tiles. Same component on both pages - only the grid columns and the
+   padding differ, so those live in the page stylesheets. */
+.stats { display: grid; gap: var(--space-2); }
+.stat {
+  padding: var(--space-3);
+  background: var(--bg-alt);
+  border-radius: var(--radius-md);
+  text-align: left;
+}
+.stat-value { font-size: var(--text-xl); font-weight: 600; line-height: 1.2; }
+.stat-label {
+  color: var(--muted);
+  font-size: var(--text-xs);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.stat.dup .stat-value { color: var(--danger); }
+.stat.sheets .stat-value { color: var(--ok); }
+
+/* Status line. The popup lets it sit in the flow and the dashboard floats it as
+   a toast; the colours are shared. */
+.status { color: var(--ok); font-size: var(--text-sm); }
+.status.error { color: var(--danger); }
+
 /* ---------- Feedback ---------- */
 
 .badge {

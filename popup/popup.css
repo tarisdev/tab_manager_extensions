@@ -8,43 +8,11 @@ body {
   line-height: 1.45;
 }
 
-.header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--space-2);
-  padding: var(--space-2) var(--space-3);
-  border-bottom: 1px solid var(--border);
-  position: sticky;
-  top: 0;
-  z-index: var(--z-header);
-  background: var(--bg);
-}
+.header { padding: var(--space-2) var(--space-3); }
 
 h1 { font-size: var(--text-md); letter-spacing: 0.08em; }
-.header-actions { display: flex; gap: var(--space-1); }
 
-.stats {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: var(--space-2);
-  padding: var(--space-3);
-}
-.stat {
-  background: var(--bg-alt);
-  border-radius: var(--radius-md);
-  padding: var(--space-2);
-  text-align: left;
-}
-.stat-value { font-size: var(--text-xl); font-weight: 600; }
-.stat-label {
-  font-size: var(--text-xs);
-  color: var(--muted);
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-}
-.stat.dup .stat-value { color: var(--danger); }
-.stat.sheets .stat-value { color: var(--ok); }
+.stats { grid-template-columns: repeat(4, 1fr); padding: var(--space-3); }
 
 .search-field { padding: 0 var(--space-3) var(--space-3); }
 
@@ -83,11 +51,9 @@ section h2 {
 .dup-meta, .result .domain { color: var(--muted); font-size: var(--text-xs); }
 
 img.favicon { width: 16px; height: 16px; border-radius: var(--radius-sm); }
-.empty { color: var(--muted); }
 .empty svg { color: var(--ok); }
 
 .actions { display: flex; flex-direction: column; gap: var(--space-2); padding: var(--space-3); }
 
-.status { padding: 0 var(--space-3) var(--space-3); color: var(--ok); min-height: 18px; font-size: var(--text-sm); }
-.status.error { color: var(--danger); }
+.status { padding: 0 var(--space-3) var(--space-3); min-height: 18px; }
 

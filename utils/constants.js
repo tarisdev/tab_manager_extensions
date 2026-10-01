@@ -10,6 +10,7 @@ export const MSG = {
   CLOSE_OTHER_TABS: 'CLOSE_OTHER_TABS',
   MOVE_TABS: 'MOVE_TABS',
   CLEAN_DUPLICATES: 'CLEAN_DUPLICATES',
+  SORT_TABS: 'SORT_TABS',
   GET_SETTINGS: 'GET_SETTINGS',
   SET_SETTINGS: 'SET_SETTINGS',
   RESET_SETTINGS: 'RESET_SETTINGS',
@@ -32,6 +33,14 @@ export const GROUP_MODES = {
   SPREADSHEET: 'spreadsheet'
 };
 
+/** Order the tabs end up in, both in the dashboard preview and in the real tab strip. */
+export const SORT_MODES = {
+  GROUP: 'group',
+  TITLE: 'title',
+  DOMAIN: 'domain',
+  RECENT: 'recent'
+};
+
 /** UI language: 'auto' follows the browser, the rest are forced (see i18n.js). */
 export const LOCALES = ['auto', 'en', 'vi'];
 
@@ -39,6 +48,7 @@ export const LOCALES = ['auto', 'en', 'vi'];
 export const DEFAULT_SETTINGS = {
   duplicateRule: KEEP_RULES.ACTIVE,
   groupBy: GROUP_MODES.DOMAIN,
+  sortBy: SORT_MODES.GROUP,
   showClosedTabs: false,
   warningEnabled: true,
   theme: 'system',

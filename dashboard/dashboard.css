@@ -7,41 +7,16 @@ body {
 
 h1 { font-size: var(--text-lg); letter-spacing: 0.08em; }
 
-/* Lucide SVGs sit next to their label inside text buttons. */
-.header-actions button, .bulkbar button, .help-body h2 { display: inline-flex; align-items: center; gap: var(--space-2); }
-.caret { display: inline-flex; color: var(--muted); }
+.caret { display: inline-flex; width: 12px; color: var(--muted); }
 
-.header {
-  position: sticky;
-  top: 0;
-  z-index: var(--z-header);
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--space-2);
-  align-items: center;
-  justify-content: space-between;
-  padding: var(--space-2) var(--space-4);
-  background: var(--bg);
-  border-bottom: 1px solid var(--border);
-}
-.brand, .header-actions { display: flex; gap: var(--space-2); align-items: center; }
-
+/* Shared parts of .header and .stats come from base.css; only the wrapping, the
+   wider gutters and the responsive columns are dashboard-specific. */
+.header { flex-wrap: wrap; padding: var(--space-2) var(--space-4); }
+.brand { display: flex; align-items: center; gap: var(--space-2); }
 .stats {
-  display: grid;
   grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
-  gap: var(--space-3);
   padding: var(--space-4) var(--space-4) 0;
 }
-.stat {
-  background: var(--bg-alt);
-  border-radius: var(--radius-md);
-  padding: var(--space-3);
-  text-align: left;
-}
-.stat-value { font-size: var(--text-2xl); font-weight: 600; line-height: 1.2; }
-.stat-label { font-size: var(--text-xs); color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; }
-.stat.dup .stat-value { color: var(--danger); }
-.stat.sheets .stat-value { color: var(--ok); }
 
 .toolbar {
   display: flex;
@@ -83,8 +58,6 @@ h1 { font-size: var(--text-lg); letter-spacing: 0.08em; }
   text-align: left;
   font-weight: 600;
 }
-.group-header:hover { border-color: transparent; }
-.caret { width: 12px; }
 .group-title { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .group-meta { color: var(--muted); font-size: var(--text-sm); font-weight: 400; }
 .tab-list { list-style: none; margin: 0; padding: 0; }
@@ -140,13 +113,15 @@ details.menu[open] summary { border-color: var(--accent); }
   display: flex;
   flex-direction: column;
   padding: var(--space-1);
-  gap: 2px;
+  gap: var(--space-1);
   background: var(--bg);
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
   box-shadow: var(--shadow-menu);
 }
 .menu-panel.up { top: auto; bottom: calc(100% + var(--space-1)); }
+/* Un-chromes the base button: the panel gives the shape, the button keeps only
+   the padding. Radius and pointer cursor already come from base.css. */
 .menu-panel button {
   height: auto;
   /* base button is inline-flex + centered, so text-align alone would do nothing. */
@@ -155,20 +130,12 @@ details.menu[open] summary { border-color: var(--accent); }
   border: 0;
   background: none;
   padding: var(--space-2);
-  border-radius: var(--radius-sm);
-  cursor: pointer;
 }
 .menu-panel button:hover { background: var(--bg-alt); }
 
-/* Window picker in the move dialog: one full-width button per target window. */
-.picker {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-2);
-  margin-top: var(--space-3);
-}
-.picker-item { width: 100%; justify-content: flex-start; }
-.picker-item[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: var(--on-accent); }
+/* Window target in the move dialog. dialog[open] is already a flex column, so
+   the select stretches on its own; it only needs room under the title. */
+#move-window { margin-top: var(--space-3); }
 
 .empty { padding: var(--space-5) var(--space-1); }
 
@@ -183,14 +150,13 @@ details.menu[open] summary { border-color: var(--accent); }
   border: 1px solid var(--border);
   border-radius: var(--radius-pill);
   padding: var(--space-2) var(--space-4);
-  font-size: var(--text-sm);
   opacity: 0;
   transition: opacity var(--speed) ease;
   pointer-events: none;
   z-index: var(--z-toast);
 }
 .status.show { opacity: 1; }
-.status.error { color: var(--danger); border-color: var(--danger); }
+.status.error { border-color: var(--danger); }
 
 .settings-form { display: flex; flex-direction: column; gap: var(--space-3); }
 .settings-form label { display: flex; flex-direction: column; gap: var(--space-1); }
@@ -199,11 +165,14 @@ details.menu[open] summary { border-color: var(--accent); }
 
 #help-dialog { width: min(560px, calc(100vw - var(--space-6))); }
 .help-body p { margin-bottom: var(--space-3); color: var(--muted); }
-.help-body ul { padding-left: 18px; display: flex; flex-direction: column; gap: var(--space-2); }
+.help-body ul { padding-left: var(--space-5); display: flex; flex-direction: column; gap: var(--space-2); }
 
-/* Narrow windows: header actions collapse to icons, labels stay in the title. */
+/* Narrow windows: header actions collapse to icons, labels stay in the title.
+   The header wraps to two rows here, so the bulkbar can no longer pin itself to
+   a hard-coded offset below it - it scrolls with the page instead. */
 @media (max-width: 520px) {
   .header-actions button span { display: none; }
   .header-actions button { width: var(--control-h); padding: 0; }
+  .bulkbar { position: static; }
 }
 

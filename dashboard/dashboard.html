@@ -45,6 +45,16 @@
         <option value="spreadsheet" data-i18n="groupBy.spreadsheet">Google Sheets file</option>
       </select>
     </label>
+    <label class="group-mode">
+      <span data-i18n="sortBy">Sort by</span>
+      <select id="sort-mode" data-i18n-attr="aria-label:sortBy">
+        <option value="group" data-i18n="sort.group">Group</option>
+        <option value="title" data-i18n="sort.title">Title (A-Z)</option>
+        <option value="domain" data-i18n="sort.domain">Domain</option>
+        <option value="recent" data-i18n="sort.recent">Newest first</option>
+      </select>
+    </label>
+    <button type="button" id="apply-sort"><i data-icon="arrow-down-up"></i><span data-i18n="action.sortTabs">Sort tabs</span></button>
   </section>
 
   <section class="bulkbar" id="bulkbar" hidden>
@@ -58,10 +68,10 @@
 
   <p class="status" id="status" role="status"></p>
 
-  <dialog id="settings-dialog">
+  <dialog id="settings-dialog" aria-labelledby="settings-title">
     <button type="button" class="dialog-close" data-close="settings-dialog" data-i18n-attr="title:action.close, aria-label:action.close"><i data-icon="x"></i></button>
     <form method="dialog" class="settings-form">
-      <h2 data-i18n="settings.title">Settings</h2>
+      <h2 id="settings-title" data-i18n="settings.title">Settings</h2>
 
       <label>
         <span data-i18n="settings.duplicateHandling">Duplicate handling</span>
@@ -113,20 +123,20 @@
     </form>
   </dialog>
 
-  <dialog id="move-dialog">
+  <dialog id="move-dialog" aria-labelledby="move-title">
     <button type="button" class="dialog-close" data-close="move-dialog" data-i18n-attr="title:action.close, aria-label:action.close"><i data-icon="x"></i></button>
-    <h2 data-i18n="moveToWindow">Move to window</h2>
-    <div class="picker" id="move-list"></div>
+    <h2 id="move-title" data-i18n="moveToWindow">Move to window</h2>
+    <select id="move-window" data-i18n-attr="aria-label:moveToWindow"></select>
     <menu class="dialog-actions">
       <button type="button" id="move-cancel" data-close="move-dialog" data-i18n="action.cancel">Cancel</button>
       <button type="button" id="move-confirm" class="primary" data-i18n="action.confirm">Confirm</button>
     </menu>
   </dialog>
 
-  <dialog id="help-dialog">
+  <dialog id="help-dialog" aria-labelledby="help-title">
     <button type="button" class="dialog-close" data-close="help-dialog" data-i18n-attr="title:action.close, aria-label:action.close"><i data-icon="x"></i></button>
     <article class="help-body">
-      <h2><i data-icon="circle-question-mark"></i><span data-i18n="help.title">Usage guide</span></h2>
+      <h2 id="help-title"><i data-icon="circle-question-mark"></i><span data-i18n="help.title">Usage guide</span></h2>
       <p data-i18n="help.intro"></p>
       <ul>
         <li data-i18n="help.badge"></li>
