@@ -14,7 +14,26 @@ h1 { font-size: var(--text-md); letter-spacing: 0.08em; }
 
 .stats { grid-template-columns: repeat(4, 1fr); padding: var(--space-3); }
 
-.search-field { padding: 0 var(--space-3) var(--space-3); }
+.search-field {
+  position: relative;
+  padding: 0 var(--space-3) var(--space-3);
+}
+
+.search-field .search-icon {
+  position: absolute;
+  left: calc(var(--space-3) + 10px);
+  top: 50%;
+  transform: translateY(-50%);
+  margin: 0;
+  pointer-events: none;
+  z-index: 2;
+}
+
+.search-field input {
+  width: 100%;
+  box-sizing: border-box;
+  padding-left: 42px;
+}
 
 section h2 {
   font-size: var(--text-xs);
