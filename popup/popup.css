@@ -22,7 +22,7 @@ h1 { font-size: var(--text-md); letter-spacing: 0.08em; }
 .search-field .search-icon {
   position: absolute;
   left: calc(var(--space-3) + 10px);
-  top: 50%;
+  top: 36%;
   transform: translateY(-50%);
   margin: 0;
   pointer-events: none;
