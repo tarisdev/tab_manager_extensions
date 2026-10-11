@@ -16,6 +16,7 @@ import {
 } from '@/components/ui/dropdown-menu.jsx';
 import { EmptyState } from '@/components/ui/empty-state.jsx';
 import { Input } from '@/components/ui/input.jsx';
+import { RepoLink } from '@/components/ui/repo-link.jsx';
 import { Select, SelectContent, SelectItem, SelectTrigger } from '@/components/ui/select.jsx';
 import { Stat } from '@/components/ui/stat.jsx';
 import { Toast } from '@/components/ui/toast.jsx';
@@ -472,6 +473,7 @@ export function Dashboard() {
           <Button variant="ghost" size="icon-sm" title={t('settings')} aria-label={t('settings')} onClick={openSettings}>
             <SettingsIcon />
           </Button>
+          <RepoLink />
         </div>
         <div className="ml-auto flex flex-wrap items-center gap-2">
           <Button variant="outline" size="sm" onClick={reload}><RefreshCw />{t('refresh')}</Button>

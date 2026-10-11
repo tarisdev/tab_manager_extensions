@@ -4,6 +4,7 @@ export const en = {
   refresh: 'Refresh',
   settings: 'Settings',
   help: 'Usage guide',
+  github: 'Source code on GitHub',
   searchPlaceholder: 'Search tabs…',
   searchTabs: 'Search tabs',
   cleanDuplicates: 'Clean Duplicates',

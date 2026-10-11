@@ -4,6 +4,7 @@ export const vi = {
   refresh: 'Làm mới',
   settings: 'Cài đặt',
   help: 'Hướng dẫn sử dụng',
+  github: 'Mã nguồn trên GitHub',
   searchPlaceholder: 'Tìm kiếm tab…',
   searchTabs: 'Tìm kiếm tab',
   cleanDuplicates: 'Dọn tab trùng',

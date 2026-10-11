@@ -43,6 +43,9 @@ export const SORT_MODES = {
 /** UI language: 'auto' follows the browser, the rest are forced (see i18n.js). */
 export const LOCALES = ['auto', 'en', 'vi'];
 
+/** Public repository, linked from the popup and dashboard headers. */
+export const REPO_URL = 'https://github.com/tarisdev/tab_manager_extensions';
+
 /** Only settings are persisted; tab state is always read live from chrome.tabs. */
 export const DEFAULT_SETTINGS = {
   duplicateRule: KEEP_RULES.ACTIVE,

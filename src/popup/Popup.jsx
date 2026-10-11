@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button.jsx';
 import { ConfirmDialog } from '@/components/shared/confirm-dialog.jsx';
 import { EmptyState } from '@/components/ui/empty-state.jsx';
 import { Input } from '@/components/ui/input.jsx';
+import { RepoLink } from '@/components/ui/repo-link.jsx';
 import { Stat } from '@/components/ui/stat.jsx';
 import { useConfirm } from '@/hooks/useConfirm.js';
 import { useTabState } from '@/hooks/useTabState.js';
@@ -68,6 +69,7 @@ export function Popup(){
         <div className="flex items-center gap-1">
           <Button variant="ghost" size="icon-sm" title={t('themeToggle')} onClick={()=>updateSettings({theme:nextTheme(settings?.theme)},true)}><SunMoon/></Button>
           <Button variant="ghost" size="icon-sm" title={t('refresh')} onClick={async()=>{await refresh();setStatus(t('status.refreshed'));setStatusError(false);}}><RefreshCw/></Button>
+          <RepoLink/>
         </div>
       </header>
       <section className="grid grid-cols-4 gap-1.5">
