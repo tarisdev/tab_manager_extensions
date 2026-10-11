@@ -62,3 +62,10 @@ service worker deliberately is not, because the manifest cannot reference a hash
 - Only settings are persisted (`chrome.storage.local`); tab state is always read live.
 - Message names live in `src/constants/index.js` (`MSG`) and are shared by the worker and
   the UI; Chrome permissions (`tabs`, `storage`, `favicon`) match the manifest.
+
+## License
+
+[PolyForm Noncommercial 1.0.0](https://polyformproject.org/licenses/noncommercial/1.0.0) — free to use,
+modify and share for **noncommercial** purposes only: personal use, study, hobby projects, research,
+charities, schools and government. Commercial use is **not** permitted, so this is not an
+OSI-approved open-source license. For commercial licensing, contact the maintainer.

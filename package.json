@@ -4,6 +4,7 @@
   "private": true,
   "type": "module",
   "description": "Track, group and de-duplicate open tabs, with special handling for Google Sheets (Spreadsheet ID + gid).",
+  "license": "PolyForm-Noncommercial-1.0.0",
   "scripts": {
     "dev": "vite build --watch",
     "build": "vite build",
