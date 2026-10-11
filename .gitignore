@@ -1,7 +1,6 @@
-# --- Dependencies (project has none today, keep it out if tooling is added) ---
+# --- Dependencies ---
 node_modules/
 vendor/
-package-lock.json
 yarn.lock
 pnpm-lock.yaml
 
