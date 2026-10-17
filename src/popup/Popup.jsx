@@ -82,7 +82,7 @@ export function Popup(){
         <Search className="absolute left-2 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground"/>
         <Input id="search" type="search" value={query} onChange={e=>setQuery(e.target.value)} placeholder={t('searchPlaceholder')} aria-label={t('searchTabs')} className="pl-8"/>
       </div>
-      <section className="max-h-[280px] space-y-2 overflow-auto pr-1">
+      <section className="max-h-70 space-y-2 overflow-auto pr-1">
         {search?(matches.length===0?<EmptyState icon={Search} message={t('status.noResults')}/>:<div className="space-y-1">{matches.map(tab=><SearchResult key={tab.id} tab={tab} onOpen={async()=>{await send(MSG.ACTIVATE_TAB,{tabId:tab.id,windowId:tab.windowId});window.close();}}/>)}</div>):(state.duplicateGroups.length===0?<EmptyState icon={CircleCheck} message={t('status.noDupes')}/>:<div className="space-y-2">{state.duplicateGroups.slice(0,8).map(g=><DuplicateRow key={g.key} group={g} onSwitch={async()=>{const target=g.tabIds[0];const tab=state.tabs.find(x=>x.id===target);await send(MSG.ACTIVATE_TAB,{tabId:target,windowId:tab?.windowId});window.close();}} onCloseCopies={async()=>{const target=g.tabIds[0];const res=await send(MSG.CLOSE_OTHER_TABS,{tabId:target});setStatus(res.ok&&res.closed?t('status.sheetsClosed',{count:res.closed}):t('status.nothingToClose'));setStatusError(!res.ok);refresh();}}/>)}</div>)}
       </section>
       <section className="mt-auto flex flex-col gap-1.5 border-t border-border pt-2">

@@ -492,7 +492,7 @@ export function Dashboard() {
 
       <div className="sticky top-0 z-30 mt-4 border-b border-border bg-background/95 backdrop-blur">
         <section className="flex flex-wrap items-center gap-2 px-4 py-3">
-          <div className="relative min-w-[180px] flex-1">
+          <div className="relative min-w-45 flex-1">
             <Search className="pointer-events-none absolute left-2 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
             <Input
               type="search" autoComplete="off"
@@ -519,12 +519,12 @@ export function Dashboard() {
           <div className="flex flex-wrap items-center gap-2">
             <span className="text-[11px] text-muted-foreground">{t('groupBy')}</span>
             <SelectField
-              className="w-[150px]" value={groupBy} options={groupOptions} label={t('groupBy')}
+              className="w-37.5" value={groupBy} options={groupOptions} label={t('groupBy')}
               onChange={(value) => updateSettings({ groupBy: value }, true)}
             />
             <span className="text-[11px] text-muted-foreground">{t('sortBy')}</span>
             <SelectField
-              className="w-[150px]" value={sortBy} options={sortOptions} label={t('sortBy')}
+              className="w-37.5" value={sortBy} options={sortOptions} label={t('sortBy')}
               onChange={(value) => updateSettings({ sortBy: value }, true)}
             />
             <Button variant="outline" size="sm" disabled={sorting} onClick={applySort}>
