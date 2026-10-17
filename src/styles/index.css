@@ -25,6 +25,9 @@
   --ring: #1a73e8;
   --ok: #188038;
   --radius: 0.5rem;
+  /* Native widgets (scrollbars, checkboxes, autofill) follow the active theme
+     instead of always rendering their light variant. */
+  color-scheme: light;
 }
 
 [data-theme="dark"] {
@@ -47,6 +50,7 @@
   --input: #3c4043;
   --ring: #8ab4f8;
   --ok: #81c995;
+  color-scheme: dark;
 }
 
 @theme inline {
@@ -90,12 +94,30 @@
     font-family: var(--font-sans);
     font-size: 13px;
     line-height: 1.45;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
   }
   /* Chrome popups size to the body: 420px wide, 600px max, scroll inside. */
   body.popup-body {
     width: 420px;
     max-height: 600px;
     overflow-y: auto;
+  }
+}
+
+/* Radix mounts its portals on open, so one short mount animation covers the
+   dialog, dropdown and select panels. Animate `scale` rather than `transform`
+   so the dialogs' -translate-x/y-1/2 centering keeps working. */
+@keyframes panel-in {
+  from {
+    opacity: 0;
+    scale: 0.97;
+  }
+}
+
+@layer components {
+  [data-state='open'].panel-anim {
+    animation: panel-in 120ms ease-out;
   }
 }
 

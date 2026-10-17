@@ -27,7 +27,7 @@ import { useToast } from '@/hooks/useToast.js';
 import { cn } from '@/utils/cn.js';
 import { send } from '@/services/messaging.js';
 
-const CHIP_BASE = 'cursor-pointer rounded-full border px-2.5 py-1 text-[11px] font-medium transition-colors';
+const CHIP_BASE = 'cursor-pointer rounded-full border px-2.5 py-1 text-[11px] font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background';
 
 /** Every window a tab can be moved to, labelled the way the worker labels it. */
 function windowOptions(tabs, currentWindowId = null) {
@@ -65,7 +65,7 @@ function TabRow({ tab, duplicate, selected, targets, onSelect, onActivate, onClo
 
   return (
     <li className={cn(
-      'flex items-center gap-2 border-t border-border px-3 py-2 hover:bg-secondary/60',
+      'flex items-center gap-2 border-t border-border px-3 py-2 transition-colors hover:bg-secondary/60',
       tab.active && 'shadow-[inset_3px_0_0_var(--ok)]',
       duplicate && 'bg-destructive/5'
     )}>
@@ -113,7 +113,7 @@ function GroupSection({ group, collapsed, onToggle, children }) {
     <section className="rounded-md border border-border">
       <button
         type="button"
-        className="flex w-full items-center gap-2 rounded-t-md bg-secondary/60 px-3 py-2 text-left"
+        className="flex w-full items-center gap-2 rounded-t-md bg-secondary/60 px-3 py-2 text-left transition-colors hover:bg-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset focus-visible:ring-offset-0"
         aria-expanded={!collapsed}
         onClick={onToggle}
       >

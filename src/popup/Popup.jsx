@@ -17,7 +17,7 @@ import { send } from '@/services/messaging.js';
 const MAX_RESULTS=25;
 function SearchResult({tab,onOpen}){
   return (
-    <button type="button" className="flex items-center gap-2 rounded-md border border-transparent px-2 py-1 text-left hover:border-border hover:bg-accent/40" onClick={onOpen}>
+    <button type="button" className="flex cursor-pointer items-center gap-2 rounded-md border border-transparent px-2 py-1 text-left transition-colors hover:border-border hover:bg-accent/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring" onClick={onOpen}>
       <img src={faviconUrl(tab.url)} alt="" className="h-4 w-4 flex-shrink-0"/>
       <div className="min-w-0 flex-1">
         <div className="truncate text-xs font-medium">{tab.title||tab.url}</div>
@@ -38,8 +38,8 @@ function DuplicateRow({group,onSwitch,onCloseCopies}){
         </div>
       </div>
       <div className="flex flex-wrap items-center gap-1.5">
-        <button type="button" className="inline-flex items-center gap-1 rounded-md border border-border bg-background px-2 py-0.5 text-[11px] hover:bg-accent" onClick={onSwitch} title={t('action.jumpFirstCopy')}><CircleCheck className="h-3.5 w-3.5"/>{t('action.jumpFirstCopy')}</button>
-        <button type="button" className="inline-flex items-center gap-1 rounded-md border border-destructive/40 bg-destructive/10 px-2 py-0.5 text-[11px] text-destructive hover:bg-destructive/15" onClick={onCloseCopies}><Trash className="h-3.5 w-3.5"/>{t('action.closeN',{count:group.count-1})}</button>
+        <button type="button" className="inline-flex cursor-pointer items-center gap-1 rounded-md border border-border bg-background px-2 py-0.5 text-[11px] transition-colors hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring" onClick={onSwitch} title={t('action.jumpFirstCopy')}><CircleCheck className="h-3.5 w-3.5"/>{t('action.jumpFirstCopy')}</button>
+        <button type="button" className="inline-flex cursor-pointer items-center gap-1 rounded-md border border-destructive/40 bg-destructive/10 px-2 py-0.5 text-[11px] text-destructive transition-colors hover:bg-destructive/15 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring" onClick={onCloseCopies}><Trash className="h-3.5 w-3.5"/>{t('action.closeN',{count:group.count-1})}</button>
       </div>
     </div>
   );

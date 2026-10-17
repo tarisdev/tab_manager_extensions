@@ -11,13 +11,13 @@ const base = [
 ].join(' ');
 
 const variants = {
-  default: 'bg-primary text-primary-foreground hover:bg-primary/90',
-  secondary: 'bg-secondary text-secondary-foreground hover:bg-secondary/80',
-  ghost: 'hover:bg-accent hover:text-accent-foreground',
-  outline: 'border border-input bg-background hover:bg-accent hover:text-accent-foreground',
-  destructive: 'bg-destructive text-destructive-foreground hover:bg-destructive/90',
-  danger: 'border border-destructive/40 text-destructive hover:bg-destructive/10',
-  subtle: 'bg-secondary/70 text-secondary-foreground hover:bg-secondary'
+  default: 'bg-primary text-primary-foreground hover:bg-primary/90 active:bg-primary/80',
+  secondary: 'bg-secondary text-secondary-foreground hover:bg-secondary/80 active:bg-secondary/70',
+  ghost: 'hover:bg-accent hover:text-accent-foreground active:bg-accent/80',
+  outline: 'border border-input bg-background hover:bg-accent hover:text-accent-foreground active:bg-accent/80',
+  destructive: 'bg-destructive text-destructive-foreground hover:bg-destructive/90 active:bg-destructive/80',
+  danger: 'border border-destructive/40 text-destructive hover:bg-destructive/10 active:bg-destructive/20',
+  subtle: 'bg-secondary/70 text-secondary-foreground hover:bg-secondary active:bg-secondary/80'
 };
 
 const sizes = {
