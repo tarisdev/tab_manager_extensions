@@ -12,8 +12,8 @@ import { useConfirm } from '@/hooks/useConfirm.js';
 import { useTabState } from '@/hooks/useTabState.js';
 import { nextTheme, useTheme } from '@/hooks/useTheme.js';
 import { send } from '@/services/messaging.js';
-import { SearchResult } from './components/SearchResult.jsx';
-import { DuplicateRow } from './components/DuplicateRow.jsx';
+import { SearchResult } from '@/popup/components/SearchResult.jsx';
+import { DuplicateRow } from '@/popup/components/DuplicateRow.jsx';
 const MAX_RESULTS=25;
 export function Popup(){
   const { state, settings, refresh, updateSettings } = useTabState();

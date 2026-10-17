@@ -12,17 +12,17 @@ import { useTabState } from '@/hooks/useTabState.js';
 import { nextTheme, useTheme } from '@/hooks/useTheme.js';
 import { useToast } from '@/hooks/useToast.js';
 import { send } from '@/services/messaging.js';
-import { BulkBar } from './components/BulkBar.jsx';
-import { GroupSection } from './components/GroupSection.jsx';
-import { HeaderBar } from './components/HeaderBar.jsx';
-import { HelpDialog } from './components/HelpDialog.jsx';
-import { MoveDialog } from './components/MoveDialog.jsx';
-import { SettingsDialog } from './components/SettingsDialog.jsx';
-import { TabRow } from './components/TabRow.jsx';
-import { Toolbar } from './components/Toolbar.jsx';
-import { useTabCommands } from './hooks/useTabCommands.js';
-import { useTabMove } from './hooks/useTabMove.js';
-import { windowOptions } from './utils.js';
+import { BulkBar } from '@/dashboard/components/BulkBar.jsx';
+import { GroupSection } from '@/dashboard/components/GroupSection.jsx';
+import { HeaderBar } from '@/dashboard/components/HeaderBar.jsx';
+import { HelpDialog } from '@/dashboard/components/HelpDialog.jsx';
+import { MoveDialog } from '@/dashboard/components/MoveDialog.jsx';
+import { SettingsDialog } from '@/dashboard/components/SettingsDialog.jsx';
+import { TabRow } from '@/dashboard/components/TabRow.jsx';
+import { Toolbar } from '@/dashboard/components/Toolbar.jsx';
+import { useTabCommands } from '@/dashboard/hooks/useTabCommands.js';
+import { useTabMove } from '@/dashboard/hooks/useTabMove.js';
+import { windowOptions } from '@/dashboard/utils.js';
 
 export function Dashboard() {
   const { state, settings, refresh, updateSettings, resetSettings } = useTabState();

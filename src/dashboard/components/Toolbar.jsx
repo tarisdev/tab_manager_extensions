@@ -4,7 +4,7 @@ import { t } from '@/i18n/index.js';
 import { Button } from '@/components/ui/button.jsx';
 import { Input } from '@/components/ui/input.jsx';
 import { cn } from '@/utils/cn.js';
-import { SelectField } from './SelectField.jsx';
+import { SelectField } from '@/dashboard/components/SelectField.jsx';
 
 const CHIP_BASE = 'cursor-pointer rounded-full border px-2.5 py-1 text-[11px] font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background';
 

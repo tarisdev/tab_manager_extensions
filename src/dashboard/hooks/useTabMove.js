@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { MSG } from '@/constants/index.js';
 import { t } from '@/i18n/index.js';
 import { send } from '@/services/messaging.js';
-import { windowOptions } from '../utils.js';
+import { windowOptions } from '@/dashboard/utils.js';
 
 /**
  * "Move to window" flow: which tabs are pending, the candidate windows and the

@@ -2,7 +2,7 @@ import { planCleanup } from '@/utils/duplicate-detector.js';
 import { groupTabs, sortGroupTabs } from '@/utils/tab-grouper.js';
 import { getSettings } from '@/services/storage.js';
 import { KEEP_RULES, SORT_MODES } from '@/constants/index.js';
-import { getState, refresh } from './state.js';
+import { getState, refresh } from '@/background/state.js';
 
 /**
  * Every mutating chrome.tabs / chrome.windows call. The worker is the only place

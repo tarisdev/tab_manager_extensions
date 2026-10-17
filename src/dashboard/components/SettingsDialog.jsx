@@ -2,7 +2,7 @@ import { KEEP_RULES } from '@/constants/index.js';
 import { t } from '@/i18n/index.js';
 import { Button } from '@/components/ui/button.jsx';
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog.jsx';
-import { SelectField } from './SelectField.jsx';
+import { SelectField } from '@/dashboard/components/SelectField.jsx';
 
 function Field({ label, children }) {
   return (

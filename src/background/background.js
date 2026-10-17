@@ -1,10 +1,10 @@
 import { MSG } from '@/constants/index.js';
 import { getSettings, setSettings, resetSettings } from '@/services/storage.js';
-import { getState, refresh, scheduleRefresh } from './state.js';
+import { getState, refresh, scheduleRefresh } from '@/background/state.js';
 import {
   activateTab, autoCloseNewDuplicates, cleanDuplicates, closeOtherTabs, closeTabs,
   moveTabs, openDashboard, sortTabs
-} from './tabs.js';
+} from '@/background/tabs.js';
 
 /**
  * Service worker entry point: wires the chrome events and routes every message
