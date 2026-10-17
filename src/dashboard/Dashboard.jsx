@@ -27,7 +27,7 @@ import { useToast } from '@/hooks/useToast.js';
 import { cn } from '@/utils/cn.js';
 import { send } from '@/services/messaging.js';
 
-const CHIP_BASE = 'rounded-full border px-2.5 py-1 text-[11px] font-medium transition-colors';
+const CHIP_BASE = 'cursor-pointer rounded-full border px-2.5 py-1 text-[11px] font-medium transition-colors';
 
 /** Every window a tab can be moved to, labelled the way the worker labels it. */
 function windowOptions(tabs, currentWindowId = null) {
