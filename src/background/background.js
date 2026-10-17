@@ -1,282 +1,31 @@
-import { parseTab } from '@/utils/tab-parser.js';
-import { findDuplicateGroups, countDuplicates, duplicateTabIds, planCleanup } from '@/utils/duplicate-detector.js';
-import { groupTabs, sortGroupTabs } from '@/utils/tab-grouper.js';
+import { MSG } from '@/constants/index.js';
 import { getSettings, setSettings, resetSettings } from '@/services/storage.js';
-import { MSG, KEEP_RULES, SORT_MODES, REFRESH_DEBOUNCE_MS } from '@/constants/index.js';
-import { resolveLocale, t } from '@/i18n/index.js';
+import { getState, refresh, scheduleRefresh } from './state.js';
+import {
+  activateTab, autoCloseNewDuplicates, cleanDuplicates, closeOtherTabs, closeTabs,
+  moveTabs, openDashboard, sortTabs
+} from './tabs.js';
 
 /**
- * Single source of truth for tab state. The service worker owns every
- * chrome.tabs / chrome.windows call; popup and dashboard only send messages
- * and render what comes back.
+ * Service worker entry point: wires the chrome events and routes every message
+ * to the module that owns the operation. The tab state cache lives in state.js,
+ * the chrome.tabs/windows calls in tabs.js.
  */
-
-function emptyStats() {
-  return { totalTabs: 0, totalWindows: 0, duplicateTabs: 0, sheetsTabs: 0 };
-}
-
-let cachedState = { tabs: [], duplicateGroups: [], duplicateTabIds: [], stats: emptyStats() };
-let refreshTimer = null;
-let refreshInFlight = null;
-let rerunAfterRefresh = false;
-
-/** Read every open tab in every window and derive the duplicate report. */
-async function buildState(settings) {
-  const [tabs, windows] = await Promise.all([
-    chrome.tabs.query({}),
-    chrome.windows.getAll({})
-  ]);
-
-  const windowLabels = new Map();
-  windows.forEach((win, order) => {
-    windowLabels.set(win.id, t('windowLabel', { n: win.focused ? 1 : order + 1 }));
-  });
-
-  const parsed = tabs.map((tab) => {
-    const item = parseTab(tab, settings);
-    item.windowLabel = windowLabels.get(tab.windowId) || t('windowLabel', { n: tab.windowId });
-    return item;
-  });
-
-  const duplicateGroups = findDuplicateGroups(parsed);
-  const stats = {
-    totalTabs: parsed.length,
-    totalWindows: windows.length,
-    duplicateTabs: countDuplicates(duplicateGroups),
-    sheetsTabs: parsed.filter((tab) => tab.isGoogleSheets).length
-  };
-
-  return {
-    tabs: parsed,
-    duplicateGroups,
-    duplicateTabIds: [...duplicateTabIds(duplicateGroups)],
-    stats
-  };
-}
-
-async function updateBadge(state, settings) {
-  // The badge is the "this sheet is already open" warning (spec 19/20).
-  const count = settings.warningEnabled ? state.stats.duplicateTabs : 0;
-  try {
-    await chrome.action.setBadgeText({ text: count > 0 ? String(count) : '' });
-    await chrome.action.setBadgeBackgroundColor({ color: '#c5221f' });
-  } catch (error) {
-    console.warn('[tab-manager] badge update failed', error);
-  }
-}
-
-/** Push state to any open popup/dashboard. Errors only mean "nobody listening". */
-async function broadcastState() {
-  try {
-    await chrome.runtime.sendMessage({ type: MSG.STATE_CHANGED, state: cachedState });
-  } catch {
-    // No receiver open - nothing to do.
-  }
-}
-
-async function refresh() {
-  // Guard against overlapping rebuilds; queue a follow-up run instead.
-  if (refreshInFlight) {
-    rerunAfterRefresh = true;
-    return refreshInFlight;
-  }
-  refreshInFlight = (async () => {
-    try {
-      // Settings decide the language first: the window labels built below go
-      // through t(), so the whole payload has to speak a single language.
-      const settings = await getSettings();
-      resolveLocale(settings.locale);
-      cachedState = await buildState(settings);
-      await updateBadge(cachedState, settings);
-      await broadcastState();
-    } catch (error) {
-      console.warn('[tab-manager] refresh failed', error);
-    } finally {
-      refreshInFlight = null;
-    }
-    if (rerunAfterRefresh) {
-      rerunAfterRefresh = false;
-      await refresh();
-    }
-  })();
-  return refreshInFlight;
-}
-
-/** Coalesce event bursts into a single rebuild. Event-driven, never polled. */
-function scheduleRefresh() {
-  if (refreshTimer) clearTimeout(refreshTimer);
-  refreshTimer = setTimeout(() => {
-    refreshTimer = null;
-    refresh();
-  }, REFRESH_DEBOUNCE_MS);
-}
-
-for (const event of ['onRemoved', 'onUpdated', 'onActivated', 'onMoved', 'onAttached', 'onDetached']) {
-  chrome.tabs[event].addListener(scheduleRefresh);
-}
-chrome.windows.onCreated.addListener(scheduleRefresh);
-chrome.windows.onRemoved.addListener(scheduleRefresh);
-
-/**
- * A new tab may be a copy of something already open. Rebuild first so the
- * decision is made on fresh state, then auto-close only if the user opted in
- * (off by default - spec 27 says the extension reports, it does not act).
- */
-chrome.tabs.onCreated.addListener(async () => {
-  scheduleRefresh();
-  const settings = await getSettings();
-  if (!settings.autoCloseDuplicates) return;
-  await refresh();
-  if (cachedState.stats.duplicateTabs === 0) return;
-  const tabsById = new Map(cachedState.tabs.map((tab) => [tab.id, tab]));
-  const ids = planCleanup(cachedState.duplicateGroups, settings.duplicateRule, tabsById)
-    .flatMap((entry) => entry.closeIds);
-  if (ids.length > 0) await closeTabs(ids);
-});
-
-chrome.runtime.onInstalled.addListener(refresh);
-chrome.runtime.onStartup.addListener(refresh);
-
-/** Ids that still exist - guards every destructive call against stale ids. */
-async function existingTabIds() {
-  const tabs = await chrome.tabs.query({});
-  return new Set(tabs.map((tab) => tab.id));
-}
-
-/**
- * Close tabs, skipping ids that vanished and never closing the last tab of a
- * window (that would close the window itself).
- */
-async function closeTabs(tabIds) {
-  // Message payloads are the only untrusted input here: keep the shape checked.
-  if (!Array.isArray(tabIds)) return { closed: 0, skipped: 0 };
-  const alive = await existingTabIds();
-  const windowsOf = new Map();
-  for (const tab of cachedState.tabs) {
-    windowsOf.set(tab.windowId, (windowsOf.get(tab.windowId) || 0) + 1);
-  }
-
-  const toClose = [];
-  for (const id of tabIds) {
-    if (!alive.has(id) || toClose.includes(id)) continue;
-    const tab = cachedState.tabs.find((item) => item.id === id);
-    if (tab) {
-      // Count down as we go: selecting every tab of a window must not close
-      // the window itself.
-      if (windowsOf.get(tab.windowId) <= 1) continue;
-      windowsOf.set(tab.windowId, windowsOf.get(tab.windowId) - 1);
-    }
-    toClose.push(id);
-  }
-
-  if (toClose.length === 0) return { closed: 0, skipped: tabIds.length };
-
-  try {
-    await chrome.tabs.remove(toClose);
-  } catch (error) {
-    console.warn('[tab-manager] close failed', error);
-  }
-  await refresh();
-  return { closed: toClose.length, skipped: tabIds.length - toClose.length };
-}
-
 const HANDLERS = {
   async [MSG.GET_STATE]() {
     await refresh();
-    return { state: cachedState, settings: await getSettings() };
+    return { state: getState(), settings: await getSettings() };
   },
 
-  async [MSG.ACTIVATE_TAB]({ tabId, windowId }) {
-    try {
-      if (windowId != null) await chrome.windows.update(windowId, { focused: true });
-      await chrome.tabs.update(tabId, { active: true });
-    } catch (error) {
-      console.warn('[tab-manager] activate failed', error);
-      return { ok: false, error: 'Tab no longer exists' };
-    }
-    await refresh();
-    return { ok: true };
-  },
+  [MSG.ACTIVATE_TAB]: activateTab,
+  [MSG.MOVE_TABS]: moveTabs,
+  [MSG.SORT_TABS]: sortTabs,
+  [MSG.CLEAN_DUPLICATES]: cleanDuplicates,
+  [MSG.CLOSE_OTHER_TABS]: closeOtherTabs,
+  [MSG.OPEN_DASHBOARD]: openDashboard,
 
   async [MSG.CLOSE_TABS]({ tabIds }) {
     return closeTabs(tabIds);
-  },
-
-  /** Close every other copy of the same content as `tabId`. */
-  async [MSG.CLOSE_OTHER_TABS]({ tabId }) {
-    const tab = cachedState.tabs.find((item) => item.id === tabId);
-    if (!tab || !tab.duplicateKey) return { closed: 0, skipped: 0 };
-    const group = cachedState.duplicateGroups.find((item) => item.key === tab.duplicateKey);
-    if (!group) return { closed: 0, skipped: 0 };
-    return closeTabs(group.tabIds.filter((id) => id !== tabId));
-  },
-
-  async [MSG.MOVE_TABS]({ tabIds, windowId, index = -1 }) {
-    if (!Array.isArray(tabIds)) return { ok: false, error: 'Move failed' };
-    try {
-      await chrome.tabs.move(tabIds, { windowId, index });
-    } catch (error) {
-      console.warn('[tab-manager] move failed', error);
-      return { ok: false, error: 'Move failed' };
-    }
-    await refresh();
-    return { ok: true };
-  },
-
-  /**
-   * Reorder the real tab strip. The order is exactly the one on screen: group
-   * order first, then the chosen rule inside each group.
-   */
-  async [MSG.SORT_TABS]({ rule }) {
-    const settings = await getSettings();
-    const useRule = Object.values(SORT_MODES).includes(rule) ? rule : settings.sortBy;
-    const groups = groupTabs(cachedState.tabs, settings.groupBy, new Set(cachedState.duplicateTabIds));
-
-    const perWindow = new Map();
-    for (const group of groups) {
-      for (const tab of sortGroupTabs(group.tabs, useRule)) {
-        if (!perWindow.has(tab.windowId)) perWindow.set(tab.windowId, []);
-        perWindow.get(tab.windowId).push(tab);
-      }
-    }
-
-    let moved = 0;
-    for (const [windowId, tabs] of perWindow) {
-      // Chrome refuses to move a tab across the pinned boundary, so the pinned
-      // block and the rest are each placed inside their own region.
-      const pinned = tabs.filter((tab) => tab.pinned);
-      const loose = tabs.filter((tab) => !tab.pinned);
-      for (const [offset, chunk] of [[0, pinned], [pinned.length, loose]]) {
-        for (let i = 0; i < chunk.length; i += 1) {
-          await chrome.tabs.move(chunk[i].id, { windowId, index: offset + i });
-          moved += 1;
-        }
-      }
-    }
-    await refresh();
-    return { moved, windows: perWindow.size, rule: useRule };
-  },
-
-  /** Preview (dryRun) or execute the cleanup for every duplicate group. */
-  async [MSG.CLEAN_DUPLICATES]({ rule, dryRun }) {
-    const current = await getSettings();
-    const useRule = Object.values(KEEP_RULES).includes(rule) ? rule : current.duplicateRule;
-    const tabsById = new Map(cachedState.tabs.map((tab) => [tab.id, tab]));
-    const plan = planCleanup(cachedState.duplicateGroups, useRule, tabsById);
-    const closeIds = plan.flatMap((entry) => entry.closeIds);
-
-    if (dryRun) {
-      return {
-        plan: plan.map(({ group, keepId, closeIds: ids }) => ({
-          title: group.title, domain: group.domain, keepId, count: ids.length
-        })),
-        total: closeIds.length,
-        rule: useRule
-      };
-    }
-    if (closeIds.length === 0) return { closed: 0, skipped: 0, rule: useRule };
-    const result = await closeTabs(closeIds);
-    return { ...result, rule: useRule };
   },
 
   async [MSG.SET_SETTINGS]({ patch }) {
@@ -291,18 +40,6 @@ const HANDLERS = {
     const settings = await resetSettings();
     await refresh();
     return { settings };
-  },
-
-  async [MSG.OPEN_DASHBOARD]() {
-    const url = chrome.runtime.getURL('dashboard/dashboard.html');
-    const existing = await chrome.tabs.query({ url });
-    if (existing.length > 0) {
-      await chrome.tabs.update(existing[0].id, { active: true });
-      await chrome.windows.update(existing[0].windowId, { focused: true });
-      return { ok: true, reused: true };
-    }
-    await chrome.tabs.create({ url });
-    return { ok: true, reused: false };
   }
 };
 
@@ -323,6 +60,20 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   return true; // keep the channel open for the async response
 });
 
+// Any tab/window change invalidates the cached state; coalesced, never polled.
+for (const event of ['onRemoved', 'onUpdated', 'onActivated', 'onMoved', 'onAttached', 'onDetached']) {
+  chrome.tabs[event].addListener(scheduleRefresh);
+}
+chrome.windows.onCreated.addListener(scheduleRefresh);
+chrome.windows.onRemoved.addListener(scheduleRefresh);
+
+chrome.tabs.onCreated.addListener(() => {
+  scheduleRefresh();
+  autoCloseNewDuplicates().catch((error) => console.warn('[tab-manager] auto-close failed', error));
+});
+
+chrome.runtime.onInstalled.addListener(refresh);
+chrome.runtime.onStartup.addListener(refresh);
+
 // Warm up so the badge is correct before any UI opens.
 refresh();
-
